@@ -51,12 +51,13 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
 
         //Search function
         searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String?): Boolean {
+            override fun onQueryTextSubmit(newText: String?): Boolean {
+                strokeManager.searchInk(newText!!, drawingView)
+                drawingView.invalidate()
                 return false
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                strokeManager.searchInk(newText, drawingView)
                 return true
             }
         })

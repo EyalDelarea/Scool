@@ -17,6 +17,8 @@ import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.google.mlkit.vision.digitalink.Ink
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.ContentChangedListener
+import kotlin.math.max
+import kotlin.math.min
 
 
 /**
@@ -172,35 +174,15 @@ class DrawingView @JvmOverloads constructor(
             var right = Float.MIN_VALUE
             for (s in ink.strokes) {
                 for (p in s.points) {
-                    top = Math.min(top, p.y)
-                    left = Math.min(left, p.x)
-                    bottom = Math.max(bottom, p.y)
-                    right = Math.max(right, p.x)
+                    top = min(top, p.y)
+                    left = min(left, p.x)
+                    bottom = max(bottom, p.y)
+                    right = max(right, p.x)
                 }
             }
-            val centerX = (left + right) / 2
-            val centerY = (top + bottom) / 2
-            val bb =
-                Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
-            bb.union(
-                (centerX - MIN_BB_WIDTH / 2).toInt(),
-                (centerY - MIN_BB_HEIGHT / 2).toInt(),
-                (centerX + MIN_BB_WIDTH / 2).toInt(),
-                (centerY + MIN_BB_HEIGHT / 2).toInt()
-            )
-            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
-            // correctly
-            if (bb.width() > MAX_BB_WIDTH) {
-                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
-                    bb.bottom
-            }
-            if (bb.height() > MAX_BB_HEIGHT) {
-                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
-                    bb.centerY() + MAX_BB_HEIGHT / 2
-            }
-            return bb
+            return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
         }
+
         fun computeStrokeBoundingBox(s: Ink.Stroke): Rect {
             var top = Float.MAX_VALUE
             var left = Float.MAX_VALUE
@@ -238,7 +220,6 @@ class DrawingView @JvmOverloads constructor(
             return bb
         }
     }
-
 
 
     /**

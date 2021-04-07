@@ -1,5 +1,6 @@
 package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
 
+import android.graphics.Rect
 import android.os.Handler
 import android.os.Message
 import android.text.TextPaint
@@ -13,6 +14,7 @@ import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.RecognitionT
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
 import java.util.ArrayList
+import kotlin.math.max
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
 class StrokeManager {
@@ -130,7 +132,7 @@ class StrokeManager {
 
         var textIndex = 0 //iterate over the non spaces text
         var strokeIndex = 0 //iterate of the strokes array
-        while (textIndex < noSpacesText?.length!! ) {
+        while (textIndex < noSpacesText?.length!!) {
             strokeContent.add(
                 RecognizedStroke(
                     recognizedInk.ink.strokes[strokeIndex],
@@ -138,7 +140,7 @@ class StrokeManager {
                 )
             )
             //if we found one of the special chars,they hold two strokes
-            if(specialChars.contains(noSpacesText[textIndex])){
+            if (specialChars.contains(noSpacesText[textIndex])) {
                 strokeIndex++
                 strokeContent.add(
                     RecognizedStroke(
@@ -183,25 +185,78 @@ class StrokeManager {
 
     //TODO computeStrokeBoundingBox for more the one char - unite them
     fun searchInk(query: String, drawingView: DrawingView) {
+
+        val matchingIndexes: MutableList<Int> = ArrayList()
         //find in content
         textPaint.color = -0x0000ff // yellow.
         textPaint.alpha = 70
         if (query != "") {
-            for (i in strokeContent) {
-                if (query.contains(i.ch!!)) {
-                    Log.i("debug", "true")
-                    //we found a match inside i
-                    //get coordinates and mark place as found
-                    val rect = DrawingView.computeStrokeBoundingBox(i.stroke)
-
+            //Find all matching indexes in strokes
+            strokeContent.forEachIndexed { index, recognizedStroke ->
+                if (query.contains(recognizedStroke.ch!!)) {
+                    matchingIndexes.add(index)
+                }
+            }
+            //find the best matches for the query
+            val (heightStreak, startIndex) = findBestMatches(matchingIndexes)
+            //If we have a streak build a rect from few stokes
+            //and then mark it
+            if (heightStreak > 1) {
+                val rect = calBoundingRect(startIndex, heightStreak)
+                drawingView.drawTextIntoBoundingBox("", rect, textPaint)
+            } else {
+                //No strokes , mark each match alone
+                matchingIndexes.forEach {
+                    val rect = DrawingView.computeStrokeBoundingBox(strokeContent[it].stroke)
                     drawingView.drawTextIntoBoundingBox("", rect, textPaint)
-                } else {
-                    Log.i("debug", "false")
                 }
             }
         }
-        //if yes - mark on screen
-        //if no - not found
+
+    }
+
+    /**
+     * Calculate bondingBox for a streak
+     * build a new ink from the strokes and calculates rect
+     * return rect
+     */
+    private fun calBoundingRect(startIndex: Int, heightStreak: Int): Rect {
+        val ink = Ink.builder();
+        if (startIndex + heightStreak < strokeContent.size) {
+            for (s in startIndex..(startIndex + heightStreak)) {
+                ink.addStroke(strokeContent[s].stroke)
+            }
+        }
+        val doneInk = ink.build()
+        return DrawingView.computeInkBoundingBox(doneInk)
+
+    }
+    /**
+     * Function to find the longest matching chars in the list
+     * returns the startIndex and the amount
+     */
+    private fun findBestMatches(matchingIndexes: MutableList<Int>): Pair<Int, Int> {
+        //Find the largest streak
+        var heightStreak = 0
+        var count = 0;
+        var startIndex = 0
+        var isSet = true
+        matchingIndexes.forEachIndexed { index, i ->
+            if (index + 1 < matchingIndexes.size) {
+                if (i + 1 == matchingIndexes[index + 1]) {
+                    count++
+                    if (isSet) {
+                        startIndex = index
+                        isSet = false
+                    }
+                } else {
+                    isSet = true
+                    count = 0
+                }
+                heightStreak = max(heightStreak, count)
+            }
+        }
+        return Pair(heightStreak, startIndex)
     }
 
 
