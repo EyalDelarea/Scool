@@ -113,46 +113,12 @@ class StrokeManager {
         }
     }
 
-    /**
-     *This function breaks down and ink object into strokes which holds
-     * corresponding chars.
-     * NOTICE - Special Chars in HE which contains two strokes are handled.
-     *
-     * TODO handle combined letters like כ+ל and so on
-     *
-     * Adding the <Stroke,Char> object to strokeContent
-     */
+
     private fun handleInkContent(recognizedInk: RecognizedInk) {
         //Add the whole ink to the inkContent
         inkContent.add(recognizedInk)
-        //define the special heb chars to handle as two strokes
-        val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
-        //remove spaces
-        val noSpacesText = recognizedInk.text?.replace("\\s".toRegex(), "")
-
-        var textIndex = 0 //iterate over the non spaces text
-        var strokeIndex = 0 //iterate of the strokes array
-        while (textIndex < noSpacesText?.length!!) {
-            strokeContent.add(
-                RecognizedStroke(
-                    recognizedInk.ink.strokes[strokeIndex],
-                    noSpacesText[textIndex]
-                )
-            )
-            //if we found one of the special chars,they hold two strokes
-            if (specialChars.contains(noSpacesText[textIndex])) {
-                strokeIndex++
-                strokeContent.add(
-                    RecognizedStroke(
-                        recognizedInk.ink.strokes[strokeIndex],
-                        noSpacesText[textIndex]
-                    )
-                )
-
-            }
-            textIndex++
-            strokeIndex++
-        }
+        //Add each stroke
+        strokeContent.add(recognizedInk)
     }
 
 
@@ -183,9 +149,8 @@ class StrokeManager {
         status = ""
     }
 
-    //TODO computeStrokeBoundingBox for more the one char - unite them
-    fun searchInk(query: String, drawingView: DrawingView) {
 
+    fun searchInk(query: String, drawingView: DrawingView) {
         val matchingIndexes: MutableList<Int> = ArrayList()
         //find in content
         textPaint.color = -0x0000ff // yellow.
@@ -240,17 +205,17 @@ class StrokeManager {
         var heightStreak = 0
         var count = 0;
         var startIndex = 0
-        var isSet = true
+        var shouldUpdate = true
         matchingIndexes.forEachIndexed { index, i ->
             if (index + 1 < matchingIndexes.size) {
                 if (i + 1 == matchingIndexes[index + 1]) {
                     count++
-                    if (isSet) {
+                    if (shouldUpdate) {
                         startIndex = index
-                        isSet = false
+                        shouldUpdate = false
                     }
                 } else {
-                    isSet = true
+                    shouldUpdate = true
                     count = 0
                 }
                 heightStreak = max(heightStreak, count)
@@ -435,6 +400,42 @@ class StrokeManager {
 
         // This is a constant that is used as a message identifier to trigger the timeout.
         private const val TIMEOUT_TRIGGER = 1
+    }
+}
+
+/**
+ * Extension function to strokes content list
+ * receiving RecognizedStroke <Stroke,Char>
+ *     Adding each stroke the strokeContent list
+ *     While taking care of special case letter which
+ *     hold two strokes
+ */
+private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: RecognizedInk) {
+    //remove spaces
+    val noSpacesText = recognizedInk.text?.replace("\\s".toRegex(), "")
+    val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
+    var textIndex = 0 //iterate over the non spaces text
+    var strokeIndex = 0 //iterate of the strokes array
+    while (textIndex < noSpacesText?.length!!) {
+        add(
+            StrokeManager.RecognizedStroke(
+                recognizedInk.ink.strokes[strokeIndex],
+                noSpacesText[textIndex]
+            )
+        )
+        //if we found one of the special chars,they hold two strokes
+        if (specialChars.contains(noSpacesText[textIndex])) {
+            strokeIndex++
+            add(
+                StrokeManager.RecognizedStroke(
+                    recognizedInk.ink.strokes[strokeIndex],
+                    noSpacesText[textIndex]
+                )
+            )
+
+        }
+        textIndex++
+        strokeIndex++
     }
 }
 
