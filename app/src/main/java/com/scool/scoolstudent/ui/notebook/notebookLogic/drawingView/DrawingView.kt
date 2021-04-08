@@ -30,7 +30,7 @@ import kotlin.math.min
  */
 
 
-@RequiresApi(Build.VERSION_CODES.N)
+
 class DrawingView @JvmOverloads constructor(
     context: Context?,
     attributeSet: AttributeSet? = null
@@ -180,7 +180,28 @@ class DrawingView @JvmOverloads constructor(
                     right = max(right, p.x)
                 }
             }
-            return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+            val centerX = (left + right) / 2
+            val centerY = (top + bottom) / 2
+            val bb =
+                Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
+            bb.union(
+                (centerX - MIN_BB_WIDTH / 2).toInt(),
+                (centerY - MIN_BB_HEIGHT / 2).toInt(),
+                (centerX + MIN_BB_WIDTH / 2).toInt(),
+                (centerY + MIN_BB_HEIGHT / 2).toInt()
+            )
+            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
+            // correctly
+            if (bb.width() > MAX_BB_WIDTH) {
+                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
+                    bb.bottom
+            }
+            if (bb.height() > MAX_BB_HEIGHT) {
+                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
+                    bb.centerY() + MAX_BB_HEIGHT / 2
+            }
+            return bb
         }
 
         fun computeStrokeBoundingBox(s: Ink.Stroke): Rect {
@@ -254,32 +275,12 @@ class DrawingView @JvmOverloads constructor(
     /**
      *
      */
-    fun drawTextIntoBoundingBox(text: String, bb: Rect, textPaint: TextPaint) {
-        val arbitraryFixedSize = 20f
-        // Set an arbitrary text size to learn how high the text will be.
-        textPaint.textSize = arbitraryFixedSize
-        textPaint.textScaleX = 1f
+    fun drawTextIntoBoundingBox(searchList:MutableList<Rect>,textPaint: TextPaint) {
 
-        // Now determine the size of the rendered text with these settings.
-        val r = Rect()
-        textPaint.getTextBounds(text, 0, text.length, r)
-
-        // Adjust height such that target height is met.
-        val textSize = arbitraryFixedSize * bb.height().toFloat() / r.height().toFloat()
-        textPaint.textSize = textSize
-
-        // Redetermine the size of the rendered text with the new settings.
-        textPaint.getTextBounds(text, 0, text.length, r)
-
-        // Adjust scaleX to squeeze the text.
-        textPaint.textScaleX = bb.width().toFloat() / r.width().toFloat()
-
-        // And finally draw the text.
-        //drawCanvas.drawText(text, bb.left.toFloat(), bb.bottom.toFloat(), textPaint)
-
-        //draw find text
-        Log.i("MLKD.Cordinates", bb.toString())
-        drawCanvas.drawRect(bb, textPaint);
+        for(r in searchList){
+            drawCanvas.drawRect(r,textPaint)
+        }
+       // drawCanvas.drawRect(bb, textPaint);
     }
 
     init {

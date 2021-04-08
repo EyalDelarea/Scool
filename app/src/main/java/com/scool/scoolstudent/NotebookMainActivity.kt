@@ -58,9 +58,17 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
+                strokeManager.resetSearchRect(drawingView)
+                strokeManager.searchInk(newText!!, drawingView)
+                drawingView.invalidate()
                 return true
             }
         })
+        searchBar.setOnCloseListener {
+            strokeManager.resetSearchRect(drawingView)
+        }
+
+
 
 //        languageSpinner.onItemSelectedListener = object : OnItemSelectedListener {
 //            override fun onItemSelected(

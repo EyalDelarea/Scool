@@ -14,7 +14,6 @@ import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.RecognitionT
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
 import java.util.ArrayList
-import kotlin.math.max
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
 class StrokeManager {
@@ -51,6 +50,9 @@ class StrokeManager {
 
     //Holding <Stroke,Char> object
     private val strokeContent: MutableList<RecognizedStroke> = ArrayList()
+
+    //Hold search rect views
+    private val searchRect: MutableList<Rect> = ArrayList()
 
 
     // Managing ink currently drawn.
@@ -149,35 +151,60 @@ class StrokeManager {
         status = ""
     }
 
+    fun resetSearchRect(drawingView: DrawingView): Boolean {
+        this.searchRect.clear()
+        drawingView.invalidate()
+        contentChangedListener?.onContentChanged()
+        return true
+
+    }
+
 
     fun searchInk(query: String, drawingView: DrawingView) {
-        val matchingIndexes: MutableList<Int> = ArrayList()
         //find in content
         textPaint.color = -0x0000ff // yellow.
         textPaint.alpha = 70
-        if (query != "") {
-            //Find all matching indexes in strokes
-            strokeContent.forEachIndexed { index, recognizedStroke ->
-                if (query.contains(recognizedStroke.ch!!)) {
-                    matchingIndexes.add(index)
-                }
+        //for each world seperate by spaces
+        val delim = " "
+        val list = query.split(delim)
+        for (i in list) {
+            markTextOnScreen(i, drawingView)
+            Log.i("eyalo", "this is q : $i ")
+        }
+    //TODO bad performance and reuse of array list
+
+    }
+
+    private fun markTextOnScreen(
+        query: String,
+        drawingView: DrawingView,
+    ) {
+        val matchingIndexes: MutableList<Int> = ArrayList()
+        //Find all matching indexes in strokes
+        strokeContent.forEachIndexed { index, recognizedStroke ->
+            if (query.contains(recognizedStroke.ch!!)) {
+                matchingIndexes.add(index)
             }
+        }
+        if (query != "") {
             //find the best matches for the query
-            val (heightStreak, startIndex) = findBestMatches(matchingIndexes)
+            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length)
+            Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
             //If we have a streak build a rect from few stokes
             //and then mark it
             if (heightStreak > 1) {
                 val rect = calBoundingRect(startIndex, heightStreak)
-                drawingView.drawTextIntoBoundingBox("", rect, textPaint)
+                searchRect.add(rect)
+                drawingView.drawTextIntoBoundingBox(searchRect, textPaint)
             } else {
                 //No strokes , mark each match alone
                 matchingIndexes.forEach {
                     val rect = DrawingView.computeStrokeBoundingBox(strokeContent[it].stroke)
-                    drawingView.drawTextIntoBoundingBox("", rect, textPaint)
+                    searchRect.add(rect)
+                    drawingView.drawTextIntoBoundingBox(searchRect, textPaint)
                 }
             }
         }
-
     }
 
     /**
@@ -196,32 +223,41 @@ class StrokeManager {
         return DrawingView.computeInkBoundingBox(doneInk)
 
     }
+
     /**
      * Function to find the longest matching chars in the list
      * returns the startIndex and the amount
      */
-    private fun findBestMatches(matchingIndexes: MutableList<Int>): Pair<Int, Int> {
+    private fun findBestMatches(matchingIndexes: MutableList<Int>, maxLength: Int): Pair<Int, Int> {
         //Find the largest streak
         var heightStreak = 0
         var count = 0;
         var startIndex = 0
         var shouldUpdate = true
+        var bestMatchStartIndex = 0
+
+
         matchingIndexes.forEachIndexed { index, i ->
             if (index + 1 < matchingIndexes.size) {
                 if (i + 1 == matchingIndexes[index + 1]) {
                     count++
                     if (shouldUpdate) {
-                        startIndex = index
+                        startIndex = i
                         shouldUpdate = false
                     }
                 } else {
                     shouldUpdate = true
                     count = 0
                 }
-                heightStreak = max(heightStreak, count)
+                if (heightStreak < count) {
+                    heightStreak = count
+                    bestMatchStartIndex = startIndex
+                }
             }
         }
-        return Pair(heightStreak, startIndex)
+        if (heightStreak > maxLength)
+            heightStreak = maxLength
+        return Pair(heightStreak, bestMatchStartIndex)
     }
 
 
@@ -409,6 +445,7 @@ class StrokeManager {
  *     Adding each stroke the strokeContent list
  *     While taking care of special case letter which
  *     hold two strokes
+ *     TODO implement fix for 1 stroke 2 chars ש+ל and so on
  */
 private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: RecognizedInk) {
     //remove spaces
