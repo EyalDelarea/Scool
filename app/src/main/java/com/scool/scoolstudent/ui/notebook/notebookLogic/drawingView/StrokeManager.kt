@@ -164,7 +164,7 @@ class StrokeManager {
         //find in content
         textPaint.color = -0x0000ff // yellow.
         textPaint.alpha = 70
-        //for each world seperate by spaces
+        //for each world separate by spaces
         val delim = " "
         val list = query.split(delim)
         for (i in list) {
@@ -255,6 +255,7 @@ class StrokeManager {
                 }
             }
         }
+        //limit the streak to maxLength of the quote
         if (heightStreak > maxLength)
             heightStreak = maxLength
         return Pair(heightStreak, bestMatchStartIndex)
@@ -456,6 +457,7 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
     while (textIndex < noSpacesText?.length!!) {
         add(
             StrokeManager.RecognizedStroke(
+                //TODO FIX CRASH HERE
                 recognizedInk.ink.strokes[strokeIndex],
                 noSpacesText[textIndex]
             )

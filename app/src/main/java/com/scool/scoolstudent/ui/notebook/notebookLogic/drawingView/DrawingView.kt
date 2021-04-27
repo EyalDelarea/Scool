@@ -30,7 +30,6 @@ import kotlin.math.min
  */
 
 
-
 class DrawingView @JvmOverloads constructor(
     context: Context?,
     attributeSet: AttributeSet? = null
@@ -180,27 +179,30 @@ class DrawingView @JvmOverloads constructor(
                     right = max(right, p.x)
                 }
             }
-            val centerX = (left + right) / 2
-            val centerY = (top + bottom) / 2
+
             val bb =
                 Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
-            bb.union(
-                (centerX - MIN_BB_WIDTH / 2).toInt(),
-                (centerY - MIN_BB_HEIGHT / 2).toInt(),
-                (centerX + MIN_BB_WIDTH / 2).toInt(),
-                (centerY + MIN_BB_HEIGHT / 2).toInt()
-            )
-            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
-            // correctly
-            if (bb.width() > MAX_BB_WIDTH) {
-                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
-                    bb.bottom
-            }
-            if (bb.height() > MAX_BB_HEIGHT) {
-                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
-                    bb.centerY() + MAX_BB_HEIGHT / 2
-            }
+
+            //REMOVED THIS - in order for the bounding box to be accurate for text only
+//            val centerX = (left + right) / 2
+//            val centerY = (top + bottom) / 2
+//            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
+//            bb.union(
+//                (centerX - MIN_BB_WIDTH / 2).toInt(),
+//                (centerY - MIN_BB_HEIGHT / 2).toInt(),
+//                (centerX + MIN_BB_WIDTH / 2).toInt(),
+//                (centerY + MIN_BB_HEIGHT / 2).toInt()
+//            )
+//            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
+//            // correctly
+//            if (bb.width() > MAX_BB_WIDTH) {
+//                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
+//                    bb.bottom
+//            }
+//            if (bb.height() > MAX_BB_HEIGHT) {
+//                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
+//                    bb.centerY() + MAX_BB_HEIGHT / 2
+//            }
             return bb
         }
 
@@ -275,12 +277,12 @@ class DrawingView @JvmOverloads constructor(
     /**
      *
      */
-    fun drawTextIntoBoundingBox(searchList:MutableList<Rect>,textPaint: TextPaint) {
+    fun drawTextIntoBoundingBox(searchList: MutableList<Rect>, textPaint: TextPaint) {
 
-        for(r in searchList){
-            drawCanvas.drawRect(r,textPaint)
+        for (r in searchList) {
+            drawCanvas.drawRect(r, textPaint)
         }
-       // drawCanvas.drawRect(bb, textPaint);
+        // drawCanvas.drawRect(bb, textPaint);
     }
 
     init {
