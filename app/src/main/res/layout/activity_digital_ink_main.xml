@@ -7,26 +7,37 @@
     android:orientation="vertical">
 
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/colorPicker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="32dp"
-        android:clickable="true"
-        android:onClick="colorPicker"
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="16dp"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@android:drawable/ic_menu_edit" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchView"
+        app:layout_constraintVertical_bias="0.127">
+
+        <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
+            android:id="@+id/drawing_view"
+            android:layout_width="match_parent"
+            android:layout_height="1400dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="false"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="150dp"
+            android:background="@drawable/bg"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </RelativeLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_width="813dp"
+        android:layout_height="184dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.47"
         app:layout_constraintStart_toStartOf="parent">
 
         <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
@@ -104,30 +115,17 @@
             app:layout_constraintBottom_toBottomOf="@+id/debugBtn"
             app:layout_constraintStart_toEndOf="@+id/debugBtn" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/colorPicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:onClick="colorPicker"
+            app:srcCompat="@android:drawable/ic_menu_edit"
+            tools:layout_editor_absoluteX="19dp"
+            tools:layout_editor_absoluteY="14dp" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <RelativeLayout
-        android:id="@+id/relativeLayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchView"
-        app:layout_constraintVertical_bias="0.127">
-
-        <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
-            android:id="@+id/drawing_view"
-            android:layout_width="match_parent"
-            android:layout_height="1200dp"
-            android:layout_alignParentStart="true"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="150dp"
-            android:background="@drawable/bg"
-            app:layout_constraintBottom_toBottomOf="parent" />
-    </RelativeLayout>
 
     <SearchView
         android:id="@+id/searchView"

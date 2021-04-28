@@ -16,6 +16,7 @@ import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import kotlinx.android.synthetic.main.activity_digital_ink_main.*
+import kotlinx.android.synthetic.main.activity_digital_ink_main.view.*
 import java.util.*
 
 
@@ -30,13 +31,13 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_digital_ink_main)
-        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
+        setContentView(R.layout.test_digital_ink)
+        val drawingView = findViewById<DrawingView>(R.id.drawingView)
         val statusTextView = findViewById<StatusTextView>(
-            R.id.status_text_view
+            R.id.statusTextView
         )
         drawingView.setStrokeManager(strokeManager)
-        val searchBar = findViewById<SearchView>(R.id.searchView)
+             val searchBar = findViewById<SearchView>(R.id.searchView)
 
         statusTextView.setStrokeManager(strokeManager)
         strokeManager.setStatusChangedListener(statusTextView)
@@ -108,7 +109,7 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
 
     fun clearClick(v: View?) {
         strokeManager.reset()
-        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
+        val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.clear()
     }
 
@@ -125,8 +126,9 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
 
     }
 
-    fun colorPicker(v: View?) {
-        drawing_view.showColorPicker()
+    fun colorPickerClicked(v: View?) {
+        val drawingViewd = findViewById<DrawingView>(R.id.drawingView)
+        drawingViewd.showColorPicker()
     }
 
     fun deleteClick(v: View?) {
