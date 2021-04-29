@@ -64,6 +64,10 @@ class DrawingView @JvmOverloads constructor(
         invalidate()
     }
 
+    fun getCanvas(): Canvas {
+        return drawCanvas;
+    }
+
     /**
      * Function to handle the flag of the erase state
      * and the paint to save the last paint.
@@ -141,14 +145,16 @@ class DrawingView @JvmOverloads constructor(
     }
 
 
-    private fun drawInk(ink: Ink, paint: Paint) {
+
+     fun drawInk(ink: Ink, paint: Paint) {
         // Log.i("DEBUG", "DrawInk")
         for (s in ink.strokes) {
             drawStroke(s, paint)
         }
+         invalidate()
     }
 
-    private fun drawStroke(s: Ink.Stroke, paint: Paint) {
+     fun drawStroke(s: Ink.Stroke, paint: Paint) {
         // Log.i(TAG, "drawstroke")
         var path: Path = Path()
         path.moveTo(s.points[0].x, s.points[0].y)
@@ -157,6 +163,8 @@ class DrawingView @JvmOverloads constructor(
         }
         drawCanvas.drawPath(path, paint)
     }
+
+
 
 
     companion object {

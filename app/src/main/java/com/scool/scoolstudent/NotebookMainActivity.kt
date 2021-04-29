@@ -1,9 +1,12 @@
 package com.scool.scoolstudent
 
 import android.graphics.Color
+import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
+import android.text.TextPaint
 import android.util.Log
+import android.util.TypedValue
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
@@ -17,6 +20,7 @@ import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextVi
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import kotlinx.android.synthetic.main.activity_digital_ink_main.*
 import kotlinx.android.synthetic.main.activity_digital_ink_main.view.*
+import kotlinx.android.synthetic.main.drawing_view.*
 import java.util.*
 
 
@@ -31,13 +35,13 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.test_digital_ink)
+        setContentView(R.layout.drawing_view)
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         val statusTextView = findViewById<StatusTextView>(
             R.id.statusTextView
         )
         drawingView.setStrokeManager(strokeManager)
-             val searchBar = findViewById<SearchView>(R.id.searchView)
+        val searchBar = findViewById<SearchView>(R.id.searchView)
 
         statusTextView.setStrokeManager(strokeManager)
         strokeManager.setStatusChangedListener(statusTextView)
@@ -70,7 +74,6 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
         }
 
 
-
 //        languageSpinner.onItemSelectedListener = object : OnItemSelectedListener {
 //            override fun onItemSelected(
 //                parent: AdapterView<*>,
@@ -94,7 +97,7 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
     }
 
 
-    fun debugClick(v:View?){
+    fun debugClick(v: View?) {
         strokeManager.testHashMap(drawingView = drawing_view)
 
     }
@@ -106,6 +109,37 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
     fun recognizeClick(v: View?) {
         strokeManager.recognize()
     }
+
+    fun savePage(v: View?) {
+        val test = strokeManager.getPageContent()
+        Log.i("eyalo", "test stop")
+    }
+
+
+    //Sample function to re paint on canvas given data
+    fun onLoadPage(v: View?) {
+        val paintStyle = Paint()
+        paintStyle.style = Paint.Style.STROKE
+        paintStyle.color = Color.RED
+        paintStyle.strokeJoin = Paint.Join.ROUND
+        paintStyle.strokeCap = Paint.Cap.ROUND
+        paintStyle.strokeWidth = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            3.toFloat(),
+            resources.displayMetrics
+        )
+        val textPaintRed = Paint(paintStyle)
+
+        val test = strokeManager.getContent()
+        drawingView.clear()
+        textPaintRed.color = Color.RED// red.
+        //draw ink on screen
+        for (i in test) {
+            drawingView.drawStroke(i.stroke, textPaintRed)
+        }
+        drawingView.invalidate()
+    }
+
 
     fun clearClick(v: View?) {
         strokeManager.reset()
@@ -157,7 +191,10 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
 
         companion object {
             /** Populates and returns a real model identifier, with label and language tag.  */
-            fun createModelContainer(label: String, languageTag: String?): ModelLanguageContainer {
+            fun createModelContainer(
+                label: String,
+                languageTag: String?
+            ): ModelLanguageContainer {
                 // Offset the actual language labels for better readability
                 return ModelLanguageContainer(label, languageTag)
             }

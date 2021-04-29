@@ -13,10 +13,10 @@ import com.google.android.gms.tasks.Tasks
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
-import java.util.ArrayList
+import java.util.*
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
-class StrokeManager {
+class StrokeManager() {
     /** Interface to register to be notified of changes in the recognized content.  */
     interface ContentChangedListener {
         /** This method is called when the recognized content changes.  */
@@ -37,7 +37,6 @@ class StrokeManager {
 
     // For handling recognition and model downloading.
     private var recognitionTask: RecognitionTask? = null
-
 
     @JvmField
     @VisibleForTesting
@@ -66,6 +65,8 @@ class StrokeManager {
     private var clearCurrentInkAfterRecognition = true
     private val textPaint: TextPaint = TextPaint()
 
+    /** Helper class that stores an Stroke along with the corresponding recognized char.  */
+    class contentObject internal constructor(val inkList: MutableList<RecognizedInk>, val strokes: MutableList<RecognizedStroke>)
 
     var status: String? = ""
         private set(newStatus) {
@@ -79,6 +80,10 @@ class StrokeManager {
 
     fun setClearCurrentInkAfterRecognition(shouldClear: Boolean) {
         clearCurrentInkAfterRecognition = shouldClear
+    }
+
+    fun getPageContent(): contentObject {
+      return contentObject(inkContent,strokeContent)
     }
 
     // Handler to handle the UI Timeout.
@@ -171,7 +176,7 @@ class StrokeManager {
             markTextOnScreen(i, drawingView)
             Log.i("eyalo", "this is q : $i ")
         }
-    //TODO bad performance and reuse of array list
+        //TODO bad performance and reuse of array list
 
     }
 

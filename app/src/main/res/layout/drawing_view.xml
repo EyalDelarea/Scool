@@ -1,43 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
-    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
-        android:id="@+id/drawingView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/transparentnotebook"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    android:layout_height="match_parent">
 
     <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
         android:id="@+id/statusTextView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
+        android:layout_width="0dp"
+        android:layout_height="65dp"
+        android:layout_marginEnd="70dp"
         android:text="com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView"
-        app:layout_constraintBottom_toBottomOf="@+id/drawingView"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
+        android:id="@+id/drawingView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/transparentnotebook"
+        app:layout_constraintBottom_toTopOf="@+id/guideline3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/searchView"
+        app:layout_constraintVertical_bias="1.0" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/floatingActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
-        android:layout_marginTop="8dp"
         android:clickable="true"
         android:onClick="colorPickerClicked"
+        app:layout_constraintBottom_toBottomOf="@+id/saveBtn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchView"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toEndOf="@+id/saveBtn"
         app:srcCompat="@android:drawable/ic_menu_edit" />
 
     <Button
@@ -55,9 +57,12 @@
         android:id="@+id/searchView"
         android:layout_width="0dp"
         android:layout_height="50dp"
+        android:background="#FFFFFF"
+        android:queryHint="Search here inside hand writing"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/drawingView" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/clearBtn"
@@ -68,5 +73,22 @@
         android:text="Clear"
         app:layout_constraintBottom_toBottomOf="@+id/button"
         app:layout_constraintStart_toEndOf="@+id/button" />
+
+    <Button
+        android:id="@+id/saveBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:onClick="onLoadPage"
+        android:text="Save"
+        app:layout_constraintBottom_toBottomOf="@+id/clearBtn"
+        app:layout_constraintStart_toEndOf="@+id/clearBtn" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        app:layout_constraintGuide_begin="1135dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
