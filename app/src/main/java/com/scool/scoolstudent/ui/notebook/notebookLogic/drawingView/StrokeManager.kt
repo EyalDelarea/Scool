@@ -60,13 +60,17 @@ class StrokeManager() {
     private var stateChangedSinceLastRequest = false
     private var contentChangedListener: ContentChangedListener? = null
     private var statusChangedListener: StatusChangedListener? = null
- //   private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
+
+    //   private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
     private var triggerRecognitionAfterInput = true
     private var clearCurrentInkAfterRecognition = true
     private val textPaint: TextPaint = TextPaint()
 
     /** Helper class that stores an Stroke along with the corresponding recognized char.  */
-    class contentObject internal constructor(val inkList: MutableList<RecognizedInk>, val strokes: MutableList<RecognizedStroke>)
+    class contentObject internal constructor(
+        val inkList: MutableList<RecognizedInk>,
+        val strokes: MutableList<RecognizedStroke>
+    )
 
     var status: String? = ""
         private set(newStatus) {
@@ -83,7 +87,7 @@ class StrokeManager() {
     }
 
     fun getPageContent(): contentObject {
-      return contentObject(inkContent,strokeContent)
+        return contentObject(inkContent, strokeContent)
     }
 
     // Handler to handle the UI Timeout.
@@ -161,11 +165,12 @@ class StrokeManager() {
         drawingView.invalidate()
         contentChangedListener?.onContentChanged()
         return true
-
     }
 
 
     fun searchInk(query: String, drawingView: DrawingView) {
+
+        resetSearchRect(drawingView) //clear previous marks
         //find in content
         textPaint.color = -0x0000ff // yellow.
         textPaint.alpha = 70
@@ -193,7 +198,7 @@ class StrokeManager() {
         }
         if (query != "") {
             //find the best matches for the query
-            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length)
+            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length-1)
             Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
             //If we have a streak build a rect from few stokes
             //and then mark it

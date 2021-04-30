@@ -27,14 +27,16 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
 
     <LinearLayout
         android:id="@+id/linearLayout3"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="62dp"
 
         android:layout_marginTop="1dp"
+        android:background="#0A787878"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -42,17 +44,18 @@
 
         <SearchView
             android:id="@+id/searchView"
-            android:layout_width="425dp"
+            android:layout_width="380dp"
             android:layout_height="match_parent"
             android:background="#0A787878"
             android:queryHint="Search here inside hand writing" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/drawTools"
-            android:layout_width="312dp"
-            android:layout_height="57dp"
+            android:layout_width="366dp"
+            android:layout_height="48dp"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
+            android:background="#0A787878"
             android:elevation="8dp">
 
             <ImageView
@@ -127,12 +130,20 @@
                 android:onClick="recognizeClick"
                 android:padding="1dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView4"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/cancelBtn"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_done_black_24dp"
                 app:tint="@color/primaryDarkColor" />
+
+            <ImageView
+                android:id="@+id/imageView4"
+                android:layout_width="52dp"
+                android:layout_height="49dp"
+                app:layout_constraintBottom_toBottomOf="@+id/saveBtn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/ic_menu_manage" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>

@@ -67,7 +67,6 @@ class NotebookMainActivity : AppCompatActivity() {
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                strokeManager.resetSearchRect(drawingView)
                 strokeManager.searchInk(newText!!, drawingView)
                 drawingView.invalidate()
                 return true
