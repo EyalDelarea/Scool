@@ -29,11 +29,11 @@ class StrokeManager() {
         fun onStatusChanged()
     }
 
-    /** Interface to register to be notified of changes in the downloaded model state.  */
-    interface DownloadedModelsChangedListener {
-        /** This method is called when the downloaded models changes.  */
-        fun onDownloadedModelsChanged(downloadedLanguageTags: Set<String>)
-    }
+//    /** Interface to register to be notified of changes in the downloaded model state.  */
+//    interface DownloadedModelsChangedListener {
+//        /** This method is called when the downloaded models changes.  */
+//        fun onDownloadedModelsChanged(downloadedLanguageTags: Set<String>)
+//    }
 
     // For handling recognition and model downloading.
     private var recognitionTask: RecognitionTask? = null
@@ -60,7 +60,7 @@ class StrokeManager() {
     private var stateChangedSinceLastRequest = false
     private var contentChangedListener: ContentChangedListener? = null
     private var statusChangedListener: StatusChangedListener? = null
-    private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
+ //   private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
     private var triggerRecognitionAfterInput = true
     private var clearCurrentInkAfterRecognition = true
     private val textPaint: TextPaint = TextPaint()
@@ -352,11 +352,11 @@ class StrokeManager() {
         this.statusChangedListener = statusChangedListener
     }
 
-    fun setDownloadedModelsChangedListener(
-        downloadedModelsChangedListener: DownloadedModelsChangedListener?
-    ) {
-        this.downloadedModelsChangedListener = downloadedModelsChangedListener
-    }
+//    fun setDownloadedModelsChangedListener(
+//        downloadedModelsChangedListener: DownloadedModelsChangedListener?
+//    ) {
+//        this.downloadedModelsChangedListener = downloadedModelsChangedListener
+//    }
 
 
     // Model downloading / deleting / setting.
@@ -367,7 +367,6 @@ class StrokeManager() {
     fun deleteActiveModel(): Task<Nothing?> {
         return modelManager
             .deleteActiveModel()
-            .addOnSuccessListener { refreshDownloadedModelsStatus() }
             .onSuccessTask(
                 SuccessContinuation { status: String? ->
                     this.status = status
@@ -380,7 +379,6 @@ class StrokeManager() {
         status = "Download started."
         return modelManager
             .download()
-            .addOnSuccessListener { refreshDownloadedModelsStatus() }
             .onSuccessTask(
                 SuccessContinuation { status: String? ->
                     this.status = status
@@ -422,13 +420,13 @@ class StrokeManager() {
             }
     }
 
-    fun refreshDownloadedModelsStatus() {
-        modelManager
-            .downloadedModelLanguages
-            .addOnSuccessListener { downloadedLanguageTags: Set<String> ->
-                downloadedModelsChangedListener?.onDownloadedModelsChanged(downloadedLanguageTags)
-            }
-    }
+//    fun refreshDownloadedModelsStatus() {
+//        modelManager
+//            .downloadedModelLanguages
+//            .addOnSuccessListener { downloadedLanguageTags: Set<String> ->
+//                downloadedModelsChangedListener?.onDownloadedModelsChanged(downloadedLanguageTags)
+//            }
+//    }
 
     /** Helper class that stores an Stroke along with the corresponding recognized char.  */
     class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char?)
