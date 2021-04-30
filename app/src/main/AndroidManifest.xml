@@ -18,14 +18,15 @@
             android:theme="@style/Theme.ScoolStudent.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
         </activity>
-<!--<activity-->
-<!--    android:name=".NotebookMainActivity">-->
-<!--</activity>-->
+<!--        <activity-->
+<!--            android:name=".NotebookMainActivity"-->
+<!--            android:theme="@style/Theme.ScoolStudent.NoActionBar">-->
+
+<!--        </activity>-->
     </application>
 
 </manifest>

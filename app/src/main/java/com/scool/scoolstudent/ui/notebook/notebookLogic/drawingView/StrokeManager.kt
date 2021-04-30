@@ -13,10 +13,10 @@ import com.google.android.gms.tasks.Tasks
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
-import java.util.ArrayList
+import java.util.*
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
-class StrokeManager {
+class StrokeManager() {
     /** Interface to register to be notified of changes in the recognized content.  */
     interface ContentChangedListener {
         /** This method is called when the recognized content changes.  */
@@ -29,15 +29,14 @@ class StrokeManager {
         fun onStatusChanged()
     }
 
-    /** Interface to register to be notified of changes in the downloaded model state.  */
-    interface DownloadedModelsChangedListener {
-        /** This method is called when the downloaded models changes.  */
-        fun onDownloadedModelsChanged(downloadedLanguageTags: Set<String>)
-    }
+//    /** Interface to register to be notified of changes in the downloaded model state.  */
+//    interface DownloadedModelsChangedListener {
+//        /** This method is called when the downloaded models changes.  */
+//        fun onDownloadedModelsChanged(downloadedLanguageTags: Set<String>)
+//    }
 
     // For handling recognition and model downloading.
     private var recognitionTask: RecognitionTask? = null
-
 
     @JvmField
     @VisibleForTesting
@@ -61,11 +60,17 @@ class StrokeManager {
     private var stateChangedSinceLastRequest = false
     private var contentChangedListener: ContentChangedListener? = null
     private var statusChangedListener: StatusChangedListener? = null
-    private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
+
+    //   private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
     private var triggerRecognitionAfterInput = true
     private var clearCurrentInkAfterRecognition = true
     private val textPaint: TextPaint = TextPaint()
 
+    /** Helper class that stores an Stroke along with the corresponding recognized char.  */
+    class contentObject internal constructor(
+        val inkList: MutableList<RecognizedInk>,
+        val strokes: MutableList<RecognizedStroke>
+    )
 
     var status: String? = ""
         private set(newStatus) {
@@ -79,6 +84,10 @@ class StrokeManager {
 
     fun setClearCurrentInkAfterRecognition(shouldClear: Boolean) {
         clearCurrentInkAfterRecognition = shouldClear
+    }
+
+    fun getPageContent(): contentObject {
+        return contentObject(inkContent, strokeContent)
     }
 
     // Handler to handle the UI Timeout.
@@ -156,11 +165,12 @@ class StrokeManager {
         drawingView.invalidate()
         contentChangedListener?.onContentChanged()
         return true
-
     }
 
 
     fun searchInk(query: String, drawingView: DrawingView) {
+
+        resetSearchRect(drawingView) //clear previous marks
         //find in content
         textPaint.color = -0x0000ff // yellow.
         textPaint.alpha = 70
@@ -171,7 +181,7 @@ class StrokeManager {
             markTextOnScreen(i, drawingView)
             Log.i("eyalo", "this is q : $i ")
         }
-    //TODO bad performance and reuse of array list
+        //TODO bad performance and reuse of array list
 
     }
 
@@ -188,7 +198,7 @@ class StrokeManager {
         }
         if (query != "") {
             //find the best matches for the query
-            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length)
+            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length-1)
             Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
             //If we have a streak build a rect from few stokes
             //and then mark it
@@ -347,11 +357,11 @@ class StrokeManager {
         this.statusChangedListener = statusChangedListener
     }
 
-    fun setDownloadedModelsChangedListener(
-        downloadedModelsChangedListener: DownloadedModelsChangedListener?
-    ) {
-        this.downloadedModelsChangedListener = downloadedModelsChangedListener
-    }
+//    fun setDownloadedModelsChangedListener(
+//        downloadedModelsChangedListener: DownloadedModelsChangedListener?
+//    ) {
+//        this.downloadedModelsChangedListener = downloadedModelsChangedListener
+//    }
 
 
     // Model downloading / deleting / setting.
@@ -362,7 +372,6 @@ class StrokeManager {
     fun deleteActiveModel(): Task<Nothing?> {
         return modelManager
             .deleteActiveModel()
-            .addOnSuccessListener { refreshDownloadedModelsStatus() }
             .onSuccessTask(
                 SuccessContinuation { status: String? ->
                     this.status = status
@@ -375,7 +384,6 @@ class StrokeManager {
         status = "Download started."
         return modelManager
             .download()
-            .addOnSuccessListener { refreshDownloadedModelsStatus() }
             .onSuccessTask(
                 SuccessContinuation { status: String? ->
                     this.status = status
@@ -417,13 +425,13 @@ class StrokeManager {
             }
     }
 
-    fun refreshDownloadedModelsStatus() {
-        modelManager
-            .downloadedModelLanguages
-            .addOnSuccessListener { downloadedLanguageTags: Set<String> ->
-                downloadedModelsChangedListener?.onDownloadedModelsChanged(downloadedLanguageTags)
-            }
-    }
+//    fun refreshDownloadedModelsStatus() {
+//        modelManager
+//            .downloadedModelLanguages
+//            .addOnSuccessListener { downloadedLanguageTags: Set<String> ->
+//                downloadedModelsChangedListener?.onDownloadedModelsChanged(downloadedLanguageTags)
+//            }
+//    }
 
     /** Helper class that stores an Stroke along with the corresponding recognized char.  */
     class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char?)

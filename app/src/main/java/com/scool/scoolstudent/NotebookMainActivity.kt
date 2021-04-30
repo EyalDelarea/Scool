@@ -1,14 +1,20 @@
 package com.scool.scoolstudent
 
+import android.annotation.SuppressLint
 import android.graphics.Color
+import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
+import android.text.TextPaint
 import android.util.Log
+import android.util.TypedValue
+import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.graphics.drawable.toDrawable
 import com.google.common.collect.ImmutableMap
 import com.google.common.collect.ImmutableSortedSet
 import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
@@ -16,24 +22,27 @@ import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import kotlinx.android.synthetic.main.activity_digital_ink_main.*
+import kotlinx.android.synthetic.main.activity_digital_ink_main.view.*
+import kotlinx.android.synthetic.main.drawing_view.*
 import java.util.*
 
 
 /** Main activity which creates a StrokeManager and connects it to the DrawingView.  */
-class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModelsChangedListener {
+class NotebookMainActivity : AppCompatActivity() {
     @JvmField
     @VisibleForTesting
     val strokeManager = StrokeManager()
 
     // private lateinit var languageAdapter: ArrayAdapter<ModelLanguageContainer>
 
+    @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_digital_ink_main)
-        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
+        setContentView(R.layout.drawing_view)
+        val drawingView = findViewById<DrawingView>(R.id.drawingView)
         val statusTextView = findViewById<StatusTextView>(
-            R.id.status_text_view
+            R.id.statusTextView
         )
         drawingView.setStrokeManager(strokeManager)
         val searchBar = findViewById<SearchView>(R.id.searchView)
@@ -41,10 +50,10 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
         statusTextView.setStrokeManager(strokeManager)
         strokeManager.setStatusChangedListener(statusTextView)
         strokeManager.setContentChangedListener(drawingView)
-        strokeManager.setDownloadedModelsChangedListener(this)
+        //   strokeManager.setDownloadedModelsChangedListener(this)
         strokeManager.setClearCurrentInkAfterRecognition(true)
         strokeManager.setTriggerRecognitionAfterInput(false)
-        strokeManager.refreshDownloadedModelsStatus()
+        //   strokeManager.refreshDownloadedModelsStatus()
         strokeManager.setActiveModel("he") //default hebrew lang
         strokeManager.download()
 
@@ -58,7 +67,6 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
-                strokeManager.resetSearchRect(drawingView)
                 strokeManager.searchInk(newText!!, drawingView)
                 drawingView.invalidate()
                 return true
@@ -69,31 +77,10 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
         }
 
 
-
-//        languageSpinner.onItemSelectedListener = object : OnItemSelectedListener {
-//            override fun onItemSelected(
-//                parent: AdapterView<*>,
-//                view: View,
-//                position: Int,
-//                id: Long
-//            ) {
-//                val languageCode =
-//                    (parent.adapter.getItem(position) as ModelLanguageContainer).languageTag
-//                        ?: return
-//                Log.i(TAG, "Selected language: $languageCode")
-//                strokeManager.setActiveModel(languageCode)
-//            }
-//
-//            override fun onNothingSelected(parent: AdapterView<*>?) {
-//
-//                Log.i(TAG, "No language selected")
-//            }
-//        }
-//        strokeManager.reset()
-    }
+    } // end of onCrate
 
 
-    fun debugClick(v:View?){
+    fun debugClick(v: View?) {
         strokeManager.testHashMap(drawingView = drawing_view)
 
     }
@@ -102,13 +89,41 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
         strokeManager.download()
     }
 
-    fun recognizeClick(v: View?) {
-        strokeManager.recognize()
+
+    fun savePage(v: View?) {
+        val test = strokeManager.getPageContent()
+        Log.i("eyalo", "test stop")
     }
+
+
+    //Sample function to re paint on canvas given data
+    fun onLoadPage(v: View?) {
+        val paintStyle = Paint()
+        paintStyle.style = Paint.Style.STROKE
+        paintStyle.color = Color.RED
+        paintStyle.strokeJoin = Paint.Join.ROUND
+        paintStyle.strokeCap = Paint.Cap.ROUND
+        paintStyle.strokeWidth = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            3.toFloat(),
+            resources.displayMetrics
+        )
+        val textPaintRed = Paint(paintStyle)
+
+        val test = strokeManager.getContent()
+        drawingView.clear()
+        textPaintRed.color = Color.RED// red.
+        //draw ink on screen
+        for (i in test) {
+            drawingView.drawStroke(i.stroke, textPaintRed)
+        }
+        drawingView.invalidate()
+    }
+
 
     fun clearClick(v: View?) {
         strokeManager.reset()
-        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
+        val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.clear()
     }
 
@@ -125,117 +140,14 @@ class NotebookMainActivity : AppCompatActivity(), StrokeManager.DownloadedModels
 
     }
 
-    fun colorPicker(v: View?) {
-        drawing_view.showColorPicker()
+    fun colorPickerClicked(v: View?) {
+        val drawingViewd = findViewById<DrawingView>(R.id.drawingView)
+        drawingViewd.showColorPicker()
     }
 
-    fun deleteClick(v: View?) {
-        strokeManager.deleteActiveModel()
-    }
 
-    private class ModelLanguageContainer private constructor(
-        private val label: String,
-        val languageTag: String?
-    ) :
-        Comparable<ModelLanguageContainer> {
-
-        var downloaded: Boolean = false
-
-        override fun toString(): String {
-            return when {
-                languageTag == null -> label
-                downloaded -> "   [D] $label"
-                else -> "   $label"
-            }
-        }
-
-        override fun compareTo(other: ModelLanguageContainer): Int {
-            return label.compareTo(other.label)
-        }
-
-        companion object {
-            /** Populates and returns a real model identifier, with label and language tag.  */
-            fun createModelContainer(label: String, languageTag: String?): ModelLanguageContainer {
-                // Offset the actual language labels for better readability
-                return ModelLanguageContainer(label, languageTag)
-            }
-
-            /** Populates and returns a label only, without a language tag.  */
-            fun createLabelOnly(label: String): ModelLanguageContainer {
-                return ModelLanguageContainer(label, null)
-            }
-        }
-    }
-
-    private fun populateLanguageAdapter(): ArrayAdapter<ModelLanguageContainer> {
-        val languageAdapter =
-            ArrayAdapter<ModelLanguageContainer>(this, android.R.layout.simple_spinner_item)
-        languageAdapter.add(
-            ModelLanguageContainer.createLabelOnly(
-                "Select language"
-            )
-        )
-        languageAdapter.add(
-            ModelLanguageContainer.createLabelOnly(
-                "Non-text Models"
-            )
-        )
-
-        // Manually add non-text models first
-        for (languageTag in NON_TEXT_MODELS.keys) {
-            languageAdapter.add(
-                ModelLanguageContainer.createModelContainer(
-                    NON_TEXT_MODELS[languageTag]!!,
-                    languageTag
-                )
-            )
-        }
-        languageAdapter.add(
-            ModelLanguageContainer.createLabelOnly(
-                "Text Models"
-            )
-        )
-        val textModels =
-            ImmutableSortedSet.naturalOrder<ModelLanguageContainer>()
-        for (modelIdentifier in DigitalInkRecognitionModelIdentifier.allModelIdentifiers()) {
-            if (NON_TEXT_MODELS.containsKey(modelIdentifier.languageTag)) {
-                continue
-            }
-            val label = StringBuilder()
-            label.append(Locale(modelIdentifier.languageSubtag).displayName)
-            if (modelIdentifier.regionSubtag != null) {
-                label.append(" (").append(modelIdentifier.regionSubtag).append(")")
-            }
-            if (modelIdentifier.scriptSubtag != null) {
-                label.append(", ").append(modelIdentifier.scriptSubtag).append(" Script")
-            }
-            textModels.add(
-                ModelLanguageContainer.createModelContainer(
-                    label.toString(), modelIdentifier.languageTag
-                )
-            )
-        }
-        languageAdapter.addAll(textModels.build())
-        return languageAdapter
-    }
-
-    override fun onDownloadedModelsChanged(downloadedLanguageTags: Set<String>) {
-//        for (i in 0 until languageAdapter.count) {
-//            val container = languageAdapter.getItem(i)!!
-//            container.downloaded = downloadedLanguageTags.contains(container.languageTag)
-//        }
-    }
-
-    companion object {
-        private const val TAG = "MLKDI.Activity"
-        private val NON_TEXT_MODELS = ImmutableMap.of(
-            "zxx-Zsym-x-autodraw",
-            "Autodraw",
-            "zxx-Zsye-x-emoji",
-            "Emoji",
-            "zxx-Zsym-x-shapes",
-            "Shapes"
-        )
+    fun recognizeClick(view: View) {
+        strokeManager.recognize()
     }
 
 }

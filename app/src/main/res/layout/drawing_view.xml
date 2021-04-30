@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".NotebookMainActivity">
+
+    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
+        android:id="@+id/statusTextView"
+        android:layout_width="0dp"
+        android:layout_height="65dp"
+        android:layout_marginEnd="70dp"
+        android:text="com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
+        android:id="@+id/drawingView"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@drawable/transparentnotebook"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="0dp"
+        android:layout_height="62dp"
+
+        android:layout_marginTop="1dp"
+        android:background="#0A787878"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <SearchView
+            android:id="@+id/searchView"
+            android:layout_width="380dp"
+            android:layout_height="match_parent"
+            android:background="#0A787878"
+            android:queryHint="Search here inside hand writing" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/drawTools"
+            android:layout_width="366dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginEnd="16dp"
+            android:background="#0A787878"
+            android:elevation="8dp">
+
+            <ImageView
+                android:id="@+id/eraseBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/redoBtn"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_eraser_black_24dp"
+                app:tint="@color/icon_color_selector" />
+
+            <ImageView
+                android:id="@+id/redoBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="32dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/undoBtn"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/eraseBtn"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_redo_black_24dp"
+                app:tint="@color/primaryDarkColor" />
+
+            <ImageView
+                android:id="@+id/undoBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:foregroundGravity="top"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/padlet"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/redoBtn"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_undo_black_24dp"
+                app:tint="@color/primaryDarkColor" />
+
+            <ImageView
+                android:id="@+id/cancelBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:onClick="clearClick"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/saveBtn"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/padlet"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_close_black_24dp"
+                app:tint="@color/primaryDarkColor" />
+
+            <ImageView
+                android:id="@+id/padlet"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:onClick="colorPickerClicked"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/cancelBtn"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/undoBtn"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_color_lens_black_24dp"
+                app:tint="@color/primaryDarkColor" />
+
+            <ImageView
+                android:id="@+id/saveBtn"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:onClick="recognizeClick"
+                android:padding="1dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toStartOf="@+id/imageView4"
+                app:layout_constraintHorizontal_bias="0.5"
+                app:layout_constraintStart_toEndOf="@+id/cancelBtn"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_done_black_24dp"
+                app:tint="@color/primaryDarkColor" />
+
+            <ImageView
+                android:id="@+id/imageView4"
+                android:layout_width="52dp"
+                android:layout_height="49dp"
+                app:layout_constraintBottom_toBottomOf="@+id/saveBtn"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:srcCompat="@drawable/ic_menu_manage" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

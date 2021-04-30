@@ -7,58 +7,43 @@
     android:orientation="vertical">
 
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/colorPicker"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="472dp"
-        android:layout_marginEnd="44dp"
-        android:clickable="true"
-        android:onClick="colorPicker"
-        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-        app:layout_constraintEnd_toEndOf="@+id/drawing_view"
-        app:layout_constraintTop_toTopOf="@+id/drawing_view"
-        app:layout_constraintVertical_bias="0.029"
-        app:srcCompat="@android:drawable/ic_menu_edit" />
-
-    <LinearLayout
-        android:id="@+id/searchLayout"
+    <RelativeLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintBottom_toTopOf="@+id/drawing_view"
+        android:layout_marginTop="16dp"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/searchView"
+        app:layout_constraintVertical_bias="0.127">
 
-
-        <SearchView
-            android:id="@+id/searchView"
+        <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
+            android:id="@+id/drawing_view"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:queryHint="חפש כאן">
-
-        </SearchView>
-
-    </LinearLayout>
+            android:layout_height="1400dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentBottom="false"
+            android:layout_marginStart="0dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="150dp"
+            android:background="@drawable/bg"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </RelativeLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/linearLayout"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="813dp"
+        android:layout_height="184dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/drawing_view">
+        app:layout_constraintHorizontal_bias="0.47"
+        app:layout_constraintStart_toStartOf="parent">
 
         <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
             android:id="@+id/status_text_view"
             android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:text="Status text..."
@@ -113,9 +98,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
+            android:layout_marginBottom="32dp"
             android:text="תוצאות זיהוי"
+            app:layout_constraintBottom_toTopOf="@+id/clear_button"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <Button
@@ -128,14 +115,28 @@
             app:layout_constraintBottom_toBottomOf="@+id/debugBtn"
             app:layout_constraintStart_toEndOf="@+id/debugBtn" />
 
+        <com.google.android.material.floatingactionbutton.FloatingActionButton
+            android:id="@+id/colorPicker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="true"
+            android:onClick="colorPicker"
+            app:srcCompat="@android:drawable/ic_menu_edit"
+            tools:layout_editor_absoluteX="19dp"
+            tools:layout_editor_absoluteY="14dp" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
-        android:id="@+id/drawing_view"
-        android:layout_width="match_parent"
-        android:layout_height="1000dp"
-        android:layout_marginBottom="150dp"
-        android:background="@drawable/bg"
-        app:layout_constraintBottom_toBottomOf="parent" />
+    <SearchView
+        android:id="@+id/searchView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:queryHint="חפש כאן"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+    </SearchView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
