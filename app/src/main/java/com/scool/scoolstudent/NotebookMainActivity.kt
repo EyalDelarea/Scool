@@ -151,10 +151,14 @@ class NotebookMainActivity : AppCompatActivity() {
     }
 
     fun undo(view:View?){
-        strokeManager.undo()
+        if(! strokeManager.undo()){
+            Toast.makeText(this,"Stack is empty",Toast.LENGTH_LONG).show()
+        }
     }
     fun redo(view:View){
-        strokeManager.redo()
+        if(!strokeManager.redo()){
+            Toast.makeText(this,"Nothing to restore",Toast.LENGTH_LONG).show()
+        }
     }
 
 }

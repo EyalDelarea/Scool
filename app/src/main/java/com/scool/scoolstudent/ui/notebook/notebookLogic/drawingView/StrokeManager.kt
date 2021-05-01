@@ -6,6 +6,7 @@ import android.os.Message
 import android.text.TextPaint
 import android.util.Log
 import android.view.MotionEvent
+import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import com.google.android.gms.tasks.SuccessContinuation
 import com.google.android.gms.tasks.Task
@@ -54,7 +55,7 @@ class StrokeManager() {
     //Hold search rect views
     private val searchRect: MutableList<Rect> = ArrayList()
 
-    private val strokeStack:ArrayDeque<RecognizedStroke> = ArrayDeque()
+    private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
 
 
     // Managing ink currently drawn.
@@ -135,19 +136,28 @@ class StrokeManager() {
         strokeContent.add(recognizedInk)
     }
 
-    fun undo(){
-        Log.i("eyalo","undo was called")
-        strokeStack.addFirst(strokeContent[strokeContent.size-1]) // add to stack
-        strokeContent.removeAt(strokeContent.size-1) //remove last stroke from stack
-        contentChangedListener?.onContentChanged() //notify content change
+    fun undo(): Boolean {
+
+        return if (strokeContent.isNotEmpty()) {
+            strokeStack.addFirst(strokeContent[strokeContent.size - 1]) // add to stack
+            strokeContent.removeAt(strokeContent.size - 1) //remove last stroke from stack
+            contentChangedListener?.onContentChanged() //notify content change
+            true
+        } else {
+            false
+        }
     }
 
-    fun redo(){
-        strokeContent.add(strokeStack.first())
-        strokeStack.removeFirst()
-        contentChangedListener?.onContentChanged()
+    fun redo(): Boolean {
+        return if (strokeStack.isNotEmpty()) {
+            strokeContent.add(strokeStack.first())
+            strokeStack.removeFirst()
+            contentChangedListener?.onContentChanged()
+            true
+        } else {
+            false
+        }
     }
-
 
     fun testHashMap(drawingView: DrawingView) {
         strokeContent.removeAt(0) //remove char
@@ -197,8 +207,6 @@ class StrokeManager() {
             markTextOnScreen(i, drawingView)
             Log.i("eyalo", "this is q : $i ")
         }
-        //TODO bad performance and reuse of array list
-
     }
 
     private fun markTextOnScreen(
@@ -214,7 +222,7 @@ class StrokeManager() {
         }
         if (query != "") {
             //find the best matches for the query
-            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length-1)
+            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length - 1)
             Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
             //If we have a streak build a rect from few stokes
             //and then mark it
@@ -327,31 +335,12 @@ class StrokeManager() {
                 )
             )
             MotionEvent.ACTION_UP -> {
-                if (isEraseOn) {
-                    //TODO CRash when more then one index
-                    inkBuilder.build()
-                    for ((index, value) in inkContent.withIndex()) {
-                        if (true) {
-                            //Figure out where to delete
-                            //In the content list or unRecognized list
-                            //TODO implement a delete function from hashMap
-                            if (recognitionTask == null) {
-                                inkContent.removeAt(index)
-                            } else {
-                                //  unRecognizedContent.removeAt(index)
-                            }
-                        }
-                    }
-                    contentChangedListener?.onContentChanged()
-                    resetCurrentInk()
-                    updateContent()
-                } else {
-                    strokeBuilder.addPoint(Ink.Point.create(x, y, t))
-                    inkBuilder.addStroke(strokeBuilder.build())
-                    strokeBuilder = Stroke.builder()
-                    stateChangedSinceLastRequest = true
-                    // recognize()
-                }
+                strokeBuilder.addPoint(Ink.Point.create(x, y, t))
+                inkBuilder.addStroke(strokeBuilder.build())
+                strokeBuilder = Stroke.builder()
+                stateChangedSinceLastRequest = true
+                // recognize()
+
             }
             else -> // Indicate touch event wasn't handled.
                 return false
@@ -372,13 +361,6 @@ class StrokeManager() {
     fun setStatusChangedListener(statusChangedListener: StatusChangedListener?) {
         this.statusChangedListener = statusChangedListener
     }
-
-//    fun setDownloadedModelsChangedListener(
-//        downloadedModelsChangedListener: DownloadedModelsChangedListener?
-//    ) {
-//        this.downloadedModelsChangedListener = downloadedModelsChangedListener
-//    }
-
 
     // Model downloading / deleting / setting.
     fun setActiveModel(languageTag: String) {
@@ -440,14 +422,6 @@ class StrokeManager() {
                 recognitionTask!!.run()
             }
     }
-
-//    fun refreshDownloadedModelsStatus() {
-//        modelManager
-//            .downloadedModelLanguages
-//            .addOnSuccessListener { downloadedLanguageTags: Set<String> ->
-//                downloadedModelsChangedListener?.onDownloadedModelsChanged(downloadedLanguageTags)
-//            }
-//    }
 
     /** Helper class that stores an Stroke along with the corresponding recognized char.  */
     class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char?)
