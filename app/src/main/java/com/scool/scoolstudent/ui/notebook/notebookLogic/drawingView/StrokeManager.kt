@@ -222,7 +222,7 @@ class StrokeManager() {
         }
         if (query != "") {
             //find the best matches for the query
-            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length - 1)
+            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length)
             Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
             //If we have a streak build a rect from few stokes
             //and then mark it
