@@ -150,4 +150,11 @@ class NotebookMainActivity : AppCompatActivity() {
         strokeManager.recognize()
     }
 
+    fun undo(view:View?){
+        strokeManager.undo()
+    }
+    fun redo(view:View){
+        strokeManager.redo()
+    }
+
 }

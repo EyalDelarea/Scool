@@ -14,6 +14,7 @@ import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.RecognitionT
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
 import java.util.*
+import kotlin.collections.ArrayDeque
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
 class StrokeManager() {
@@ -52,6 +53,8 @@ class StrokeManager() {
 
     //Hold search rect views
     private val searchRect: MutableList<Rect> = ArrayList()
+
+    private val strokeStack:ArrayDeque<RecognizedStroke> = ArrayDeque()
 
 
     // Managing ink currently drawn.
@@ -130,6 +133,19 @@ class StrokeManager() {
         inkContent.add(recognizedInk)
         //Add each stroke
         strokeContent.add(recognizedInk)
+    }
+
+    fun undo(){
+        Log.i("eyalo","undo was called")
+        strokeStack.addFirst(strokeContent[strokeContent.size-1]) // add to stack
+        strokeContent.removeAt(strokeContent.size-1) //remove last stroke from stack
+        contentChangedListener?.onContentChanged() //notify content change
+    }
+
+    fun redo(){
+        strokeContent.add(strokeStack.first())
+        strokeStack.removeFirst()
+        contentChangedListener?.onContentChanged()
     }
 
 
@@ -462,10 +478,9 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
     val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
     var textIndex = 0 //iterate over the non spaces text
     var strokeIndex = 0 //iterate of the strokes array
-    while (textIndex < noSpacesText?.length!!) {
+    while (textIndex < noSpacesText?.length!! && strokeIndex < recognizedInk.ink.strokes.size) {
         add(
             StrokeManager.RecognizedStroke(
-                //TODO FIX CRASH HERE
                 recognizedInk.ink.strokes[strokeIndex],
                 noSpacesText[textIndex]
             )

@@ -145,16 +145,15 @@ class DrawingView @JvmOverloads constructor(
     }
 
 
-
-     fun drawInk(ink: Ink, paint: Paint) {
+    fun drawInk(ink: Ink, paint: Paint) {
         // Log.i("DEBUG", "DrawInk")
         for (s in ink.strokes) {
             drawStroke(s, paint)
         }
-         invalidate()
+        invalidate()
     }
 
-     fun drawStroke(s: Ink.Stroke, paint: Paint) {
+    fun drawStroke(s: Ink.Stroke, paint: Paint) {
         // Log.i(TAG, "drawstroke")
         var path: Path = Path()
         path.moveTo(s.points[0].x, s.points[0].y)
@@ -163,8 +162,6 @@ class DrawingView @JvmOverloads constructor(
         }
         drawCanvas.drawPath(path, paint)
     }
-
-
 
 
     companion object {
