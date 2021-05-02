@@ -5,26 +5,18 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.os.Build
 import android.os.Bundle
-import android.text.TextPaint
 import android.util.Log
 import android.util.TypedValue
-import android.view.MotionEvent
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.graphics.drawable.toDrawable
-import com.google.common.collect.ImmutableMap
-import com.google.common.collect.ImmutableSortedSet
-import com.google.mlkit.vision.digitalink.DigitalInkRecognitionModelIdentifier
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.StatusTextView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import kotlinx.android.synthetic.main.activity_digital_ink_main.*
-import kotlinx.android.synthetic.main.activity_digital_ink_main.view.*
 import kotlinx.android.synthetic.main.drawing_view.*
-import java.util.*
 
 
 /** Main activity which creates a StrokeManager and connects it to the DrawingView.  */
@@ -50,10 +42,6 @@ class NotebookMainActivity : AppCompatActivity() {
         statusTextView.setStrokeManager(strokeManager)
         strokeManager.setStatusChangedListener(statusTextView)
         strokeManager.setContentChangedListener(drawingView)
-        //   strokeManager.setDownloadedModelsChangedListener(this)
-        strokeManager.setClearCurrentInkAfterRecognition(true)
-        strokeManager.setTriggerRecognitionAfterInput(false)
-        //   strokeManager.refreshDownloadedModelsStatus()
         strokeManager.setActiveModel("he") //default hebrew lang
         strokeManager.download()
 
@@ -81,7 +69,7 @@ class NotebookMainActivity : AppCompatActivity() {
 
 
     fun debugClick(v: View?) {
-        strokeManager.testHashMap(drawingView = drawing_view)
+        Log.i("eyalo", "test stop")
 
     }
 
@@ -91,7 +79,6 @@ class NotebookMainActivity : AppCompatActivity() {
 
 
     fun savePage(v: View?) {
-        val test = strokeManager.getPageContent()
         Log.i("eyalo", "test stop")
     }
 

@@ -1,8 +1,9 @@
-package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
+package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils
 
 import android.content.Context
 import android.util.AttributeSet
 import androidx.appcompat.widget.AppCompatTextView
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.StatusChangedListener
 
 /**

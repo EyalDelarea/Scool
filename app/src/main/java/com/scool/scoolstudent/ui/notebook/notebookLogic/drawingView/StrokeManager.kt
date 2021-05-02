@@ -6,14 +6,19 @@ import android.os.Message
 import android.text.TextPaint
 import android.util.Log
 import android.view.MotionEvent
-import android.widget.Toast
 import androidx.annotation.VisibleForTesting
 import com.google.android.gms.tasks.SuccessContinuation
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.RecognitionTask.RecognizedInk
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.ModelManager
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.RecognitionTask
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions.calBoundingRect
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions.findBestMatches
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions.markTextOnScreen
 import java.util.*
 import kotlin.collections.ArrayDeque
 
@@ -30,20 +35,16 @@ class StrokeManager() {
         /** This method is called when the recognized content changes.  */
         fun onStatusChanged()
     }
-
-//    /** Interface to register to be notified of changes in the downloaded model state.  */
-//    interface DownloadedModelsChangedListener {
-//        /** This method is called when the downloaded models changes.  */
-//        fun onDownloadedModelsChanged(downloadedLanguageTags: Set<String>)
-//    }
-
-    // For handling recognition and model downloading.
-    private var recognitionTask: RecognitionTask? = null
-
     @JvmField
     @VisibleForTesting
     var modelManager =
         ModelManager()
+
+    /** Helper class that stores an Stroke along with the corresponding recognized char.  */
+    class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char?)
+
+    // For handling recognition and model downloading.
+    private var recognitionTask: RecognitionTask? = null
 
     // Managing the recognition queue.
     //Holding <Ink,Text> object
@@ -55,8 +56,8 @@ class StrokeManager() {
     //Hold search rect views
     private val searchRect: MutableList<Rect> = ArrayList()
 
+    //Stack for the use of undo & redo
     private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
-
 
     // Managing ink currently drawn.
     private var strokeBuilder = Stroke.builder()
@@ -64,36 +65,13 @@ class StrokeManager() {
     private var stateChangedSinceLastRequest = false
     private var contentChangedListener: ContentChangedListener? = null
     private var statusChangedListener: StatusChangedListener? = null
-
-    //   private var downloadedModelsChangedListener: DownloadedModelsChangedListener? = null
-    private var triggerRecognitionAfterInput = true
-    private var clearCurrentInkAfterRecognition = true
     private val textPaint: TextPaint = TextPaint()
-
-    /** Helper class that stores an Stroke along with the corresponding recognized char.  */
-    class contentObject internal constructor(
-        val inkList: MutableList<RecognizedInk>,
-        val strokes: MutableList<RecognizedStroke>
-    )
 
     var status: String? = ""
         private set(newStatus) {
             field = newStatus
             statusChangedListener?.onStatusChanged()
         }
-
-    fun setTriggerRecognitionAfterInput(shouldTrigger: Boolean) {
-        triggerRecognitionAfterInput = shouldTrigger
-    }
-
-    fun setClearCurrentInkAfterRecognition(shouldClear: Boolean) {
-        clearCurrentInkAfterRecognition = shouldClear
-    }
-
-    fun getPageContent(): contentObject {
-        return contentObject(inkContent, strokeContent)
-    }
-
     // Handler to handle the UI Timeout.
     // This handler is only used to trigger the UI timeout. Each time a UI interaction happens,
     // the timer is reset by clearing the queue on this handler and sending a new delayed message (in
@@ -111,7 +89,6 @@ class StrokeManager() {
             false
         }
     )
-
     /**
      * Adds the new result to the content list
      */
@@ -128,16 +105,28 @@ class StrokeManager() {
         }
     }
 
-
-    private fun handleInkContent(recognizedInk: RecognizedInk) {
-        //Add the whole ink to the inkContent
-        inkContent.add(recognizedInk)
-        //Add each stroke
-        strokeContent.add(recognizedInk)
+    /**
+     * Search function
+     * Reset all search rects.
+     * For each word , separated by spaces " " , mark the test on the screen
+     */
+    fun searchInk(query: String, drawingView: DrawingView) {
+        resetSearchRect(drawingView) //clear previous marks
+        textPaint.color = -0x0000ff // yellow.
+        textPaint.alpha = 70
+        //for each world separate by spaces
+        val delim = " "
+        val list = query.split(delim)
+        for (i in list) {
+            markTextOnScreen(i, drawingView,strokeContent,searchRect,textPaint)
+        }
     }
 
+    /**
+     * Undo function
+     * NEED TO IMPLEMENT - stack for un recognized strokes
+     */
     fun undo(): Boolean {
-
         return if (strokeContent.isNotEmpty()) {
             strokeStack.addFirst(strokeContent[strokeContent.size - 1]) // add to stack
             strokeContent.removeAt(strokeContent.size - 1) //remove last stroke from stack
@@ -147,7 +136,10 @@ class StrokeManager() {
             false
         }
     }
-
+    /**
+     * Redo function
+     * NEED TO IMPLEMENT - stack for un recognized strokes
+     */
     fun redo(): Boolean {
         return if (strokeStack.isNotEmpty()) {
             strokeContent.add(strokeStack.first())
@@ -159,14 +151,17 @@ class StrokeManager() {
         }
     }
 
-    fun testHashMap(drawingView: DrawingView) {
-        strokeContent.removeAt(0) //remove char
-        updateContent()               //update status text
-        drawingView.onContentChanged() //re draw on screen
-        //TODO update inkContent upState when deleting
-        Log.i("eyalo", "deleteing")
+    /**
+     * Handling an RecognizedInk object
+     * Adding the ink object the array list of ink
+     * Adding and analyzing each stroke to the corresponding char
+     */
+    private fun handleInkContent(recognizedInk: RecognizedInk) {
+        //Add the whole ink to the inkContent
+        inkContent.add(recognizedInk)
+        //Add each stroke
+        strokeContent.add(recognizedInk)
     }
-
 
     private fun updateContent() {
         var contentString = "";
@@ -186,115 +181,15 @@ class StrokeManager() {
         status = ""
     }
 
+    /**
+     * Clears the search rect on screen
+     */
     fun resetSearchRect(drawingView: DrawingView): Boolean {
         this.searchRect.clear()
         drawingView.invalidate()
         contentChangedListener?.onContentChanged()
         return true
     }
-
-
-    fun searchInk(query: String, drawingView: DrawingView) {
-
-        resetSearchRect(drawingView) //clear previous marks
-        //find in content
-        textPaint.color = -0x0000ff // yellow.
-        textPaint.alpha = 70
-        //for each world separate by spaces
-        val delim = " "
-        val list = query.split(delim)
-        for (i in list) {
-            markTextOnScreen(i, drawingView)
-            Log.i("eyalo", "this is q : $i ")
-        }
-    }
-
-    private fun markTextOnScreen(
-        query: String,
-        drawingView: DrawingView,
-    ) {
-        val matchingIndexes: MutableList<Int> = ArrayList()
-        //Find all matching indexes in strokes
-        strokeContent.forEachIndexed { index, recognizedStroke ->
-            if (query.contains(recognizedStroke.ch!!)) {
-                matchingIndexes.add(index)
-            }
-        }
-        if (query != "") {
-            //find the best matches for the query
-            val (heightStreak, startIndex) = findBestMatches(matchingIndexes, query.length)
-            Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
-            //If we have a streak build a rect from few stokes
-            //and then mark it
-            if (heightStreak > 1) {
-                val rect = calBoundingRect(startIndex, heightStreak)
-                searchRect.add(rect)
-                drawingView.drawTextIntoBoundingBox(searchRect, textPaint)
-            } else {
-                //No strokes , mark each match alone
-                matchingIndexes.forEach {
-                    val rect = DrawingView.computeStrokeBoundingBox(strokeContent[it].stroke)
-                    searchRect.add(rect)
-                    drawingView.drawTextIntoBoundingBox(searchRect, textPaint)
-                }
-            }
-        }
-    }
-
-    /**
-     * Calculate bondingBox for a streak
-     * build a new ink from the strokes and calculates rect
-     * return rect
-     */
-    private fun calBoundingRect(startIndex: Int, heightStreak: Int): Rect {
-        val ink = Ink.builder();
-        if (startIndex + heightStreak < strokeContent.size) {
-            for (s in startIndex..(startIndex + heightStreak)) {
-                ink.addStroke(strokeContent[s].stroke)
-            }
-        }
-        val doneInk = ink.build()
-        return DrawingView.computeInkBoundingBox(doneInk)
-
-    }
-
-    /**
-     * Function to find the longest matching chars in the list
-     * returns the startIndex and the amount
-     */
-    private fun findBestMatches(matchingIndexes: MutableList<Int>, maxLength: Int): Pair<Int, Int> {
-        //Find the largest streak
-        var heightStreak = 0
-        var count = 0;
-        var startIndex = 0
-        var shouldUpdate = true
-        var bestMatchStartIndex = 0
-
-
-        matchingIndexes.forEachIndexed { index, i ->
-            if (index + 1 < matchingIndexes.size) {
-                if (i + 1 == matchingIndexes[index + 1]) {
-                    count++
-                    if (shouldUpdate) {
-                        startIndex = i
-                        shouldUpdate = false
-                    }
-                } else {
-                    shouldUpdate = true
-                    count = 0
-                }
-                if (heightStreak < count) {
-                    heightStreak = count
-                    bestMatchStartIndex = startIndex
-                }
-            }
-        }
-        //limit the streak to maxLength of the quote
-        if (heightStreak > maxLength)
-            heightStreak = maxLength
-        return Pair(heightStreak, bestMatchStartIndex)
-    }
-
 
     private fun resetCurrentInk() {
         inkBuilder = Ink.builder()
@@ -340,7 +235,6 @@ class StrokeManager() {
                 strokeBuilder = Stroke.builder()
                 stateChangedSinceLastRequest = true
                 // recognize()
-
             }
             else -> // Indicate touch event wasn't handled.
                 return false
@@ -365,17 +259,6 @@ class StrokeManager() {
     // Model downloading / deleting / setting.
     fun setActiveModel(languageTag: String) {
         status = modelManager.setModel(languageTag)
-    }
-
-    fun deleteActiveModel(): Task<Nothing?> {
-        return modelManager
-            .deleteActiveModel()
-            .onSuccessTask(
-                SuccessContinuation { status: String? ->
-                    this.status = status
-                    return@SuccessContinuation Tasks.forResult(null)
-                }
-            )
     }
 
     fun download(): Task<Nothing?> {
@@ -423,16 +306,12 @@ class StrokeManager() {
             }
     }
 
-    /** Helper class that stores an Stroke along with the corresponding recognized char.  */
-    class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char?)
-
     companion object {
         @JvmField
         @VisibleForTesting
         //1000 default
         val CONVERSION_TIMEOUT_MS: Long = 1000
         private const val TAG = "MLKD.StrokeManager"
-
         // This is a constant that is used as a message identifier to trigger the timeout.
         private const val TIMEOUT_TRIGGER = 1
     }
@@ -452,6 +331,7 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
     val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
     var textIndex = 0 //iterate over the non spaces text
     var strokeIndex = 0 //iterate of the strokes array
+    //TODO fix CRASH index out of bounds(שלום לכולם)
     while (textIndex < noSpacesText?.length!! && strokeIndex < recognizedInk.ink.strokes.size) {
         add(
             StrokeManager.RecognizedStroke(
