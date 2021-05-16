@@ -5,14 +5,12 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.*
-import android.os.Build
 import android.text.TextPaint
 import android.util.AttributeSet
 import android.util.Log
 import android.util.TypedValue
 import android.view.MotionEvent
 import android.view.View
-import androidx.annotation.RequiresApi
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
 import com.google.mlkit.vision.digitalink.Ink
@@ -39,10 +37,10 @@ class DrawingView @JvmOverloads constructor(
     private val recognizedStrokePaint: Paint
     private var markerPaint: TextPaint
     private val erasePaint = TextPaint()
-    var preTextPaint = Paint()
+    private var preTextPaint = Paint()
     var isEraseOn = false
-    var currentBackgroundColor = 0x0000FF;
-    var currentStrokePaint: Paint
+    private var currentBackgroundColor = 0x0000FF
+    private var currentStrokePaint: Paint
     private val canvasPaint: Paint
     private val currentStroke: Path
     private lateinit var drawCanvas: Canvas
@@ -65,7 +63,7 @@ class DrawingView @JvmOverloads constructor(
     }
 
     fun getCanvas(): Canvas {
-        return drawCanvas;
+        return drawCanvas
     }
 
     /**
@@ -74,12 +72,12 @@ class DrawingView @JvmOverloads constructor(
      */
     fun onEraseClick() {
         if (!isEraseOn) {
-            isEraseOn = true;
-            preTextPaint = currentStrokePaint;
-            currentStrokePaint = erasePaint;
+            isEraseOn = true
+            preTextPaint = currentStrokePaint
+            currentStrokePaint = erasePaint
         } else {
-            isEraseOn = false;
-            currentStrokePaint = preTextPaint;
+            isEraseOn = false
+            currentStrokePaint = preTextPaint
         }
     }
 
@@ -103,7 +101,6 @@ class DrawingView @JvmOverloads constructor(
 
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
-        //     Log.i(TAG, "onTouch event")
         val action = event.actionMasked
         val x = event.x
         val y = event.y
@@ -145,17 +142,17 @@ class DrawingView @JvmOverloads constructor(
     }
 
 
-    fun drawInk(ink: Ink, paint: Paint) {
-        // Log.i("DEBUG", "DrawInk")
-        for (s in ink.strokes) {
-            drawStroke(s, paint)
-        }
-        invalidate()
-    }
+//    fun drawInk(ink: Ink, paint: Paint) {
+//        // Log.i("DEBUG", "DrawInk")
+//        for (s in ink.strokes) {
+//            drawStroke(s, paint)
+//        }
+//        invalidate()
+//    }
 
     fun drawStroke(s: Ink.Stroke, paint: Paint) {
         // Log.i(TAG, "drawstroke")
-        var path: Path = Path()
+        val path = Path()
         path.moveTo(s.points[0].x, s.points[0].y)
         for (p in s.points.drop(1)) {
             path.lineTo(p.x, p.y)
@@ -184,31 +181,7 @@ class DrawingView @JvmOverloads constructor(
                     right = max(right, p.x)
                 }
             }
-
-            val bb =
-                Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-
-            //REMOVED THIS - in order for the bounding box to be accurate for text only
-//            val centerX = (left + right) / 2
-//            val centerY = (top + bottom) / 2
-//            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
-//            bb.union(
-//                (centerX - MIN_BB_WIDTH / 2).toInt(),
-//                (centerY - MIN_BB_HEIGHT / 2).toInt(),
-//                (centerX + MIN_BB_WIDTH / 2).toInt(),
-//                (centerY + MIN_BB_HEIGHT / 2).toInt()
-//            )
-//            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
-//            // correctly
-//            if (bb.width() > MAX_BB_WIDTH) {
-//                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
-//                    bb.bottom
-//            }
-//            if (bb.height() > MAX_BB_HEIGHT) {
-//                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
-//                    bb.centerY() + MAX_BB_HEIGHT / 2
-//            }
-            return bb
+            return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
         }
 
         fun computeStrokeBoundingBox(s: Ink.Stroke): Rect {
@@ -218,10 +191,10 @@ class DrawingView @JvmOverloads constructor(
             var right = Float.MIN_VALUE
 
             for (p in s.points) {
-                top = Math.min(top, p.y)
-                left = Math.min(left, p.x)
-                bottom = Math.max(bottom, p.y)
-                right = Math.max(right, p.x)
+                top = min(top, p.y)
+                left = min(left, p.x)
+                bottom = max(bottom, p.y)
+                right = max(right, p.x)
             }
 
             val centerX = (left + right) / 2
@@ -279,15 +252,8 @@ class DrawingView @JvmOverloads constructor(
         currentBackgroundColor = color
     }
 
-    /**
-     *
-     */
-    fun drawTextIntoBoundingBox(searchList: MutableList<Rect>, textPaint: TextPaint) {
-
-        for (r in searchList) {
-            drawCanvas.drawRect(r, textPaint)
-        }
-        // drawCanvas.drawRect(bb, textPaint);
+    fun drawSingleBoundingBox(rect: Rect, textPaint: TextPaint) {
+        drawCanvas.drawRect(rect, textPaint)
     }
 
     init {

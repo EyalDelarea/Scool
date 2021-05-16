@@ -13,8 +13,9 @@ import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.StatusTextView
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.Companion.strokeContent
 import kotlinx.android.synthetic.main.activity_digital_ink_main.*
 import kotlinx.android.synthetic.main.drawing_view.*
 
@@ -24,8 +25,6 @@ class NotebookMainActivity : AppCompatActivity() {
     @JvmField
     @VisibleForTesting
     val strokeManager = StrokeManager()
-
-    // private lateinit var languageAdapter: ArrayAdapter<ModelLanguageContainer>
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.N)
@@ -51,10 +50,11 @@ class NotebookMainActivity : AppCompatActivity() {
             override fun onQueryTextSubmit(newText: String?): Boolean {
                 strokeManager.searchInk(newText!!, drawingView)
                 drawingView.invalidate()
-                return false
+                return true
             }
 
             override fun onQueryTextChange(newText: String): Boolean {
+                StrokeManager.matchingIndexes.clear()
                 strokeManager.searchInk(newText!!, drawingView)
                 drawingView.invalidate()
                 return true

@@ -1,4 +1,4 @@
-package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils
+package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils
 
 import android.content.Context
 import android.util.AttributeSet

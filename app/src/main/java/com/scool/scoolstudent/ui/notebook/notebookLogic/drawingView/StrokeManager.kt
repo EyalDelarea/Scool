@@ -10,17 +10,15 @@ import androidx.annotation.VisibleForTesting
 import com.google.android.gms.tasks.SuccessContinuation
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.RecognitionTask.RecognizedInk
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.ModelManager
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.RecognitionTask
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions.calBoundingRect
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions.findBestMatches
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.UtilsFunctions.markTextOnScreen
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.ModelManager
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.UtilsFunctions.markTextOnScreen
 import java.util.*
 import kotlin.collections.ArrayDeque
+import kotlin.collections.ArrayList
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
 class StrokeManager() {
@@ -35,6 +33,7 @@ class StrokeManager() {
         /** This method is called when the recognized content changes.  */
         fun onStatusChanged()
     }
+
     @JvmField
     @VisibleForTesting
     var modelManager =
@@ -50,14 +49,13 @@ class StrokeManager() {
     //Holding <Ink,Text> object
     private val inkContent: MutableList<RecognizedInk> = ArrayList()
 
-    //Holding <Stroke,Char> object
-    private val strokeContent: MutableList<RecognizedStroke> = ArrayList()
 
     //Hold search rect views
     private val searchRect: MutableList<Rect> = ArrayList()
 
     //Stack for the use of undo & redo
     private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
+
 
     // Managing ink currently drawn.
     private var strokeBuilder = Stroke.builder()
@@ -72,6 +70,7 @@ class StrokeManager() {
             field = newStatus
             statusChangedListener?.onStatusChanged()
         }
+
     // Handler to handle the UI Timeout.
     // This handler is only used to trigger the UI timeout. Each time a UI interaction happens,
     // the timer is reset by clearing the queue on this handler and sending a new delayed message (in
@@ -89,6 +88,7 @@ class StrokeManager() {
             false
         }
     )
+
     /**
      * Adds the new result to the content list
      */
@@ -117,8 +117,27 @@ class StrokeManager() {
         //for each world separate by spaces
         val delim = " "
         val list = query.split(delim)
+        matchingIndexes.clear()
+        //Find all matching indexes in strokes
+
+        //Create new instance to handle duplicates
+        val searchStrokeContent:MutableList<RecognizedStroke> = ArrayList()
+        strokeContent.forEach {
+            searchStrokeContent.add(it)
+        }
+
+
+        //For each word separately mark text on screen
+        //When index is marked on screen, it is removed from the list
         for (i in list) {
-            markTextOnScreen(i, drawingView,strokeContent,searchRect,textPaint)
+            matchingIndexes.clear()
+            //Find matching indexes
+            searchStrokeContent.forEachIndexed { index, recognizedStroke ->
+                if (i.contains(recognizedStroke.ch!!)) {
+                    matchingIndexes.add(index)
+                }
+            }
+            markTextOnScreen(i, drawingView, searchStrokeContent, searchRect, textPaint)
         }
     }
 
@@ -136,6 +155,7 @@ class StrokeManager() {
             false
         }
     }
+
     /**
      * Redo function
      * NEED TO IMPLEMENT - stack for un recognized strokes
@@ -217,7 +237,6 @@ class StrokeManager() {
         val x = event.x
         val y = event.y
         val t = System.currentTimeMillis()
-
         // A new event happened -> clear all pending timeout messages.
         uiHandler.removeMessages(TIMEOUT_TRIGGER)
         when (action) {
@@ -310,8 +329,17 @@ class StrokeManager() {
         @JvmField
         @VisibleForTesting
         //1000 default
+
         val CONVERSION_TIMEOUT_MS: Long = 1000
+
+        //Find all matching indexes that matches the query
+        val matchingIndexes: MutableList<Int> = ArrayList()
+
+        //Holding <Stroke,Char> object
+        val strokeContent: MutableList<RecognizedStroke> = ArrayList()
+
         private const val TAG = "MLKD.StrokeManager"
+
         // This is a constant that is used as a message identifier to trigger the timeout.
         private const val TIMEOUT_TRIGGER = 1
     }

@@ -40,7 +40,7 @@
         app:layout_constraintHorizontal_bias="0.47"
         app:layout_constraintStart_toStartOf="parent">
 
-        <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.StatusTextView
+        <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
             android:id="@+id/status_text_view"
             android:layout_width="0dp"
             android:layout_height="wrap_content"

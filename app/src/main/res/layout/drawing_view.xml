@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context=".NotebookMainActivity">
 
-    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.Utils.StatusTextView
+    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
         android:id="@+id/statusTextView"
         android:layout_width="0dp"
         android:layout_height="65dp"
