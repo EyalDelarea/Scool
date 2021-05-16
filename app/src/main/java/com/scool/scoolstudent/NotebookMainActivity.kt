@@ -15,7 +15,6 @@ import androidx.appcompat.app.AppCompatActivity
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.Companion.strokeContent
 import kotlinx.android.synthetic.main.activity_digital_ink_main.*
 import kotlinx.android.synthetic.main.drawing_view.*
 
@@ -55,7 +54,7 @@ class NotebookMainActivity : AppCompatActivity() {
 
             override fun onQueryTextChange(newText: String): Boolean {
                 StrokeManager.matchingIndexes.clear()
-                strokeManager.searchInk(newText!!, drawingView)
+                strokeManager.searchInk(newText, drawingView)
                 drawingView.invalidate()
                 return true
             }
@@ -68,15 +67,10 @@ class NotebookMainActivity : AppCompatActivity() {
     } // end of onCrate
 
 
-    fun debugClick(v: View?) {
+    fun debugClick() {
         Log.i("eyalo", "test stop")
 
     }
-
-    fun downloadClick(v: View?) {
-        strokeManager.download()
-    }
-
 
     fun savePage(v: View?) {
         Log.i("eyalo", "test stop")
@@ -123,13 +117,13 @@ class NotebookMainActivity : AppCompatActivity() {
         } else {
             eraseButton.setBackgroundColor(Color.BLUE)
         }
-        drawingView.onEraseClick();
+        drawingView.onEraseClick()
 
     }
 
     fun colorPickerClicked(v: View?) {
-        val drawingViewd = findViewById<DrawingView>(R.id.drawingView)
-        drawingViewd.showColorPicker()
+        val drawingView = findViewById<DrawingView>(R.id.drawingView)
+        drawingView.showColorPicker()
     }
 
 

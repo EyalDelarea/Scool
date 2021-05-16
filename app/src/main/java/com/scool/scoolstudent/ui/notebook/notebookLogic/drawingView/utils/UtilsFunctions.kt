@@ -2,7 +2,6 @@ package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils
 
 import android.graphics.Rect
 import android.text.TextPaint
-import android.util.Log
 import com.google.mlkit.vision.digitalink.Ink
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
@@ -15,7 +14,7 @@ object UtilsFunctions {
      * build a new ink from the strokes and calculates rect
      * return rect
      */
-    fun calBoundingRect(
+    private fun calBoundingRect(
         startIndex: Int,
         heightStreak: Int,
         strokeContent: MutableList<StrokeManager.RecognizedStroke>
@@ -34,7 +33,7 @@ object UtilsFunctions {
      * Function to find the longest matching chars in the list
      * returns the startIndex and the amount
      */
-    fun findBestMatches(
+    private fun findBestMatches(
         matchingIndexes: MutableList<Int>,
         query: String,
         strokeContent: MutableList<StrokeManager.RecognizedStroke>
@@ -95,9 +94,7 @@ object UtilsFunctions {
         searchStrokeContent: MutableList<StrokeManager.RecognizedStroke>,
         searchRect: MutableList<Rect>,
         textPaint: TextPaint,
-
-        ) {
-
+    ) {
         if (query != "") {
             //find the best matches for the query
             val (heightStreak, startIndex) = findBestMatches(
@@ -105,22 +102,14 @@ object UtilsFunctions {
                 query,
                 searchStrokeContent
             )
-            Log.i("eyalo", "heightStreak : $heightStreak , startIndex : $startIndex ")
-            //If we have a streak build a rect from few stokes
-            //and then mark it
+            //If we have a streak build a rect from few stokes and mark it
             if (heightStreak > 0) {
                 val rect = calBoundingRect(startIndex, heightStreak, searchStrokeContent)
-                searchRect.add(rect)
-                drawingView.drawSingleBoundingBox(rect, textPaint)
-
-                var counter = 0
-                //TODO Fix if the query doesn't start from 0
-                for (j in startIndex..startIndex + heightStreak) {
-                    searchStrokeContent.removeAt(j - counter)
-                    counter++
-                }
+                searchRect.add(rect) //add to rect stack
+                drawingView.drawSingleBoundingBox(rect, textPaint) //draw rect
+                removeMarkedStrokesFromList(startIndex, heightStreak, searchStrokeContent)
             } else {
-                //No strokes , mark each match alone
+                //Only one char matches
                 StrokeManager.matchingIndexes.forEach {
                     val rect = DrawingView.computeStrokeBoundingBox(searchStrokeContent[it].stroke)
                     searchRect.add(rect)
@@ -129,14 +118,28 @@ object UtilsFunctions {
             }
         }
     }
+
+    private fun removeMarkedStrokesFromList(
+        startIndex: Int,
+        heightStreak: Int,
+        searchStrokeContent: MutableList<StrokeManager.RecognizedStroke>
+    ) {
+        //TODO Fix if the query doesn't start from 0
+        for ((counter, j) in (startIndex..startIndex + heightStreak).withIndex()) {
+            searchStrokeContent.removeAt(j - counter)
+        }
+    }
 }
 
+/**
+ * Overwrite function to replace string only the first appearance
+ */
 private fun String.replace(oldChar: Char?, newChar: String): Any {
     return buildString(length) {
         var count = 0 //make sure we remove only one char
         this@replace.forEach { c ->
             append(
-                if (c == oldChar && count ==0) {
+                if (c == oldChar && count == 0) {
                     count++
                     newChar
                 } else c

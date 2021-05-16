@@ -359,7 +359,6 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
     val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
     var textIndex = 0 //iterate over the non spaces text
     var strokeIndex = 0 //iterate of the strokes array
-    //TODO fix CRASH index out of bounds(שלום לכולם)
     while (textIndex < noSpacesText?.length!! && strokeIndex < recognizedInk.ink.strokes.size) {
         add(
             StrokeManager.RecognizedStroke(
@@ -376,7 +375,6 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
                     noSpacesText[textIndex]
                 )
             )
-
         }
         textIndex++
         strokeIndex++
