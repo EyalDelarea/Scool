@@ -13,12 +13,15 @@ import com.google.android.gms.tasks.Tasks
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.RecognizedStroke
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.ModelManager
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.UtilsFunctions.markTextOnScreen
+
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
+import kotlinx.serialization.*
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
 class StrokeManager() {
@@ -40,7 +43,10 @@ class StrokeManager() {
         ModelManager()
 
     /** Helper class that stores an Stroke along with the corresponding recognized char.  */
-    class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char?)
+    class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char)
+
+
+
 
     // For handling recognition and model downloading.
     private var recognitionTask: RecognitionTask? = null
@@ -121,7 +127,7 @@ class StrokeManager() {
         //Find all matching indexes in strokes
 
         //Create new instance to handle duplicates
-        val searchStrokeContent:MutableList<RecognizedStroke> = ArrayList()
+        val searchStrokeContent: MutableList<RecognizedStroke> = ArrayList()
         strokeContent.forEach {
             searchStrokeContent.add(it)
         }
@@ -334,9 +340,11 @@ class StrokeManager() {
 
         //Find all matching indexes that matches the query
         val matchingIndexes: MutableList<Int> = ArrayList()
-
+`
         //Holding <Stroke,Char> object
+
         val strokeContent: MutableList<RecognizedStroke> = ArrayList()
+
 
         private const val TAG = "MLKD.StrokeManager"
 
@@ -344,6 +352,10 @@ class StrokeManager() {
         private const val TIMEOUT_TRIGGER = 1
     }
 }
+
+
+
+
 
 /**
  * Extension function to strokes content list
@@ -353,7 +365,7 @@ class StrokeManager() {
  *     hold two strokes
  *     TODO implement fix for 1 stroke 2 chars ש+ל and so on
  */
-private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: RecognizedInk) {
+private fun MutableList<RecognizedStroke>.add(recognizedInk: RecognizedInk) {
     //remove spaces
     val noSpacesText = recognizedInk.text?.replace("\\s".toRegex(), "")
     val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
@@ -361,7 +373,7 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
     var strokeIndex = 0 //iterate of the strokes array
     while (textIndex < noSpacesText?.length!! && strokeIndex < recognizedInk.ink.strokes.size) {
         add(
-            StrokeManager.RecognizedStroke(
+            RecognizedStroke(
                 recognizedInk.ink.strokes[strokeIndex],
                 noSpacesText[textIndex]
             )
@@ -370,7 +382,7 @@ private fun MutableList<StrokeManager.RecognizedStroke>.add(recognizedInk: Recog
         if (specialChars.contains(noSpacesText[textIndex])) {
             strokeIndex++
             add(
-                StrokeManager.RecognizedStroke(
+                RecognizedStroke(
                     recognizedInk.ink.strokes[strokeIndex],
                     noSpacesText[textIndex]
                 )

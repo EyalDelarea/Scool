@@ -147,6 +147,13 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/ic_menu_manage" />
 
+            <Button
+                android:id="@+id/button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:onClick="savePage"
+                android:text="Button" />
+
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
 

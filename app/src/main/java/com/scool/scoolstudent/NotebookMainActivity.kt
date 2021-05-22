@@ -12,11 +12,21 @@ import android.widget.*
 import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
+import com.google.gson.Gson
+import com.scool.scoolstudent.realm.NotebookRealmObject
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
-import kotlinx.android.synthetic.main.activity_digital_ink_main.*
+import io.realm.Realm
+import io.realm.RealmConfiguration
+import io.realm.RealmList
+import io.realm.RealmModel
+import io.realm.annotations.PrimaryKey
+import io.realm.annotations.Required
+
 import kotlinx.android.synthetic.main.drawing_view.*
+import org.jetbrains.annotations.NotNull
+import org.json.JSONArray
 
 
 /** Main activity which creates a StrokeManager and connects it to the DrawingView.  */
@@ -24,6 +34,8 @@ class NotebookMainActivity : AppCompatActivity() {
     @JvmField
     @VisibleForTesting
     val strokeManager = StrokeManager()
+    private lateinit var backgroundThreadRealm :Realm
+
 
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.N)
@@ -64,6 +76,11 @@ class NotebookMainActivity : AppCompatActivity() {
         }
 
 
+        val realmName = "Notebooks"
+        val config = RealmConfiguration.Builder().name(realmName).build()
+         backgroundThreadRealm = Realm.getInstance(config)
+
+
     } // end of onCrate
 
 
@@ -73,8 +90,20 @@ class NotebookMainActivity : AppCompatActivity() {
     }
 
     fun savePage(v: View?) {
-        Log.i("eyalo", "test stop")
-    }
+
+        val savedNotebook = NotebookRealmObject()
+        savedNotebook.name = "notebookName"
+
+        var gson = Gson()
+        var json = gson.toJson(strokeManager.getContent()).toString()
+        savedNotebook.content = json
+
+        backgroundThreadRealm.executeTransactionAsync{transactionRealm ->
+            transactionRealm.insert(savedNotebook)
+        }
+
+        Log.i("eyalo", "insrted ! ")
+   }
 
 
     //Sample function to re paint on canvas given data
@@ -96,7 +125,7 @@ class NotebookMainActivity : AppCompatActivity() {
         textPaintRed.color = Color.RED// red.
         //draw ink on screen
         for (i in test) {
-            drawingView.drawStroke(i.stroke, textPaintRed)
+            i.stroke?.let { drawingView.drawStroke(it, textPaintRed) }
         }
         drawingView.invalidate()
     }
@@ -109,17 +138,17 @@ class NotebookMainActivity : AppCompatActivity() {
     }
 
 
-    fun eraseClick(v: View?) {
-        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
-
-        if (!drawingView.isEraseOn) {
-            eraseButton.setBackgroundColor(Color.RED)
-        } else {
-            eraseButton.setBackgroundColor(Color.BLUE)
-        }
-        drawingView.onEraseClick()
-
-    }
+//    fun eraseClick(v: View?) {
+//        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
+//
+//        if (!drawingView.isEraseOn) {
+//            eraseButton.setBackgroundColor(Color.RED)
+//        } else {
+//            eraseButton.setBackgroundColor(Color.BLUE)
+//        }
+//        drawingView.onEraseClick()
+//
+//    }
 
     fun colorPickerClicked(v: View?) {
         val drawingView = findViewById<DrawingView>(R.id.drawingView)

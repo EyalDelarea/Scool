@@ -71,5 +71,7 @@ dependencies {
     implementation fileTree(include: '*.jar', dir: 'libs')
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0'
     implementation 'com.github.QuadFlask:colorpicker:0.0.15'
+    implementation 'com.google.code.gson:gson:2.8.6'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.1'
 
 }
