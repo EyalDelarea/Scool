@@ -32,23 +32,6 @@ class HomeFragment : Fragment() {
             textView.text = it
         })
 
-
-
-
-
-        val taskBtn: Button = root.findViewById(R.id.getallBtn)
-
-        taskBtn.setOnClickListener{
-            homeViewModel.getNotebooksInstances()
-        }
-
-        val praseb: Button = root.findViewById(R.id.initbtn)
-
-        praseb.setOnClickListener{
-            homeViewModel.paraseJSON()
-        }
-
-
         return root
     }
 

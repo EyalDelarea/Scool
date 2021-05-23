@@ -13,8 +13,17 @@ import android.view.MotionEvent
 import android.view.View
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import com.google.gson.Gson
 import com.google.mlkit.vision.digitalink.Ink
+import com.scool.scoolstudent.realm.NotebookRealmObject
+import com.scool.scoolstudent.realm.notesObject.NotebookDataInstanceItem
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.ContentChangedListener
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
+import io.realm.Realm
+import io.realm.RealmConfiguration
+import io.realm.RealmResults
+import io.realm.kotlin.where
+import kotlinx.android.synthetic.main.drawing_view.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,7 +40,6 @@ import kotlin.math.min
 class DrawingView @JvmOverloads constructor(
     context: Context?,
     attributeSet: AttributeSet? = null
-
 ) :
     View(context, attributeSet), ContentChangedListener {
     private val recognizedStrokePaint: Paint
@@ -43,9 +51,15 @@ class DrawingView @JvmOverloads constructor(
     private var currentStrokePaint: Paint
     private val canvasPaint: Paint
     private val currentStroke: Path
-    private lateinit var drawCanvas: Canvas
+    private var drawCanvas: Canvas = Canvas()
     private lateinit var canvasBitmap: Bitmap
     private lateinit var strokeManager: StrokeManager
+    val realmName = "Notebooks"
+    val config = RealmConfiguration.Builder().name(realmName).build()
+    private var backgroundThreadRealm: Realm = Realm.getInstance(config)
+    private lateinit var notebooks: RealmResults<NotebookRealmObject>
+
+
     fun setStrokeManager(strokeManager: StrokeManager) {
         this.strokeManager = strokeManager
     }
@@ -142,13 +156,13 @@ class DrawingView @JvmOverloads constructor(
     }
 
 
-//    fun drawInk(ink: Ink, paint: Paint) {
-//        // Log.i("DEBUG", "DrawInk")
-//        for (s in ink.strokes) {
-//            drawStroke(s, paint)
-//        }
-//        invalidate()
-//    }
+    private fun drawInk(ink: Ink) {
+        for (s in ink.strokes) {
+            drawStroke(s, currentStrokePaint)
+        }
+        invalidate()
+        Log.i("eyalo", "invalidated")
+    }
 
     fun drawStroke(s: Ink.Stroke, paint: Paint) {
         // Log.i(TAG, "drawstroke")
@@ -163,11 +177,12 @@ class DrawingView @JvmOverloads constructor(
 
     companion object {
         private const val TAG = "MLKD.DrawingView"
-        private const val STROKE_WIDTH_DP = 3
+        const val STROKE_WIDTH_DP = 3
         private const val MIN_BB_WIDTH = 10
         private const val MIN_BB_HEIGHT = 10
         private const val MAX_BB_WIDTH = 256
         private const val MAX_BB_HEIGHT = 256
+
         fun computeInkBoundingBox(ink: Ink): Rect {
             var top = Float.MAX_VALUE
             var left = Float.MAX_VALUE
@@ -255,6 +270,60 @@ class DrawingView @JvmOverloads constructor(
     fun drawSingleBoundingBox(rect: Rect, textPaint: TextPaint) {
         drawCanvas.drawRect(rect, textPaint)
     }
+
+
+    fun onLoadPage() {
+        val strokeBuilder = Ink.Stroke.builder()
+        val inkBuilder = Ink.builder()
+        //Query the DB for the name of the notebook
+        //TODO implement names for notebooks
+        backgroundThreadRealm.executeTransactionAsync { bgRealm ->
+            notebooks = bgRealm.where<NotebookRealmObject>().findAll()
+            Log.i("eyalo", "this is notebooks : $notebooks")
+            buildContent(strokeBuilder, inkBuilder)
+        }
+
+    }
+
+    private fun buildContent(
+        strokeBuilder: Ink.Stroke.Builder,
+        inkBuilder: Ink.Builder,
+    ) {
+        val gson = Gson()
+        //Get the content of the notebook
+        val jsonData = notebooks[0]?.content
+        //Set the data
+
+        val data: List<NotebookDataInstanceItem> =
+            gson.fromJson(jsonData, Array<NotebookDataInstanceItem>::class.java).toList()
+        //Build ink object from data
+        data[0].ink.zza.forEach { stroke ->
+            stroke.zza.forEach { p ->
+                //build point
+                strokeBuilder.addPoint(Ink.Point.create(p.zza.toFloat(), p.zzb.toFloat(), p.zzc))
+            }
+            //build stroke
+            inkBuilder.addStroke(strokeBuilder.build())
+        }
+
+        //Paint the strokes to the screen
+        //TODO LOAD THE CONTENT - May fix the async problem
+        val ink = inkBuilder.build()
+        drawInk(ink)
+        Log.i("eyalo", "Drawd inks from database")
+
+        updateContent(ink, data[0].text)
+
+        //TODO Update content and status text
+
+    }
+
+    private fun updateContent(ink: Ink, text: String) {
+        strokeManager.status = text
+        strokeManager.inkContent.add(RecognitionTask.RecognizedInk(ink, text))
+        drawInk(ink)
+    }
+
 
     init {
         currentStrokePaint = Paint()

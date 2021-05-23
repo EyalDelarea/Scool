@@ -105,7 +105,7 @@
                 android:layout_height="50dp"
                 android:onClick="clearClick"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/saveBtn"
+                app:layout_constraintEnd_toStartOf="@+id/recoBtn"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/padlet"
                 app:layout_constraintTop_toTopOf="parent"
@@ -126,7 +126,7 @@
                 app:tint="@color/primaryDarkColor" />
 
             <ImageView
-                android:id="@+id/saveBtn"
+                android:id="@+id/recoBtn"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:onClick="recognizeClick"
@@ -143,18 +143,23 @@
                 android:id="@+id/imageView4"
                 android:layout_width="52dp"
                 android:layout_height="49dp"
-                app:layout_constraintBottom_toBottomOf="@+id/saveBtn"
+                app:layout_constraintBottom_toBottomOf="@+id/recoBtn"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:srcCompat="@drawable/ic_menu_manage" />
 
-            <Button
-                android:id="@+id/button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:onClick="savePage"
-                android:text="Button" />
-
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/saveBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:onClick="savePage"
+        android:text="Save"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,22 +1,32 @@
 package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
 
+import android.graphics.Color
+import android.graphics.Paint
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Message
 import android.text.TextPaint
 import android.util.Log
+import android.util.TypedValue
 import android.view.MotionEvent
 import androidx.annotation.VisibleForTesting
 import com.google.android.gms.tasks.SuccessContinuation
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.gson.Gson
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
+import com.scool.scoolstudent.realm.NotebookRealmObject
+import com.scool.scoolstudent.realm.notesObject.NotebookDataInstanceItem
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.RecognizedStroke
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.ModelManager
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.UtilsFunctions.markTextOnScreen
+import io.realm.Realm
+import io.realm.RealmConfiguration
+import io.realm.RealmResults
+import io.realm.kotlin.where
 
 import java.util.*
 import kotlin.collections.ArrayDeque
@@ -46,14 +56,12 @@ class StrokeManager() {
     class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char)
 
 
-
-
     // For handling recognition and model downloading.
     private var recognitionTask: RecognitionTask? = null
 
     // Managing the recognition queue.
     //Holding <Ink,Text> object
-    private val inkContent: MutableList<RecognizedInk> = ArrayList()
+    var inkContent: MutableList<RecognizedInk> = ArrayList()
 
 
     //Hold search rect views
@@ -71,8 +79,9 @@ class StrokeManager() {
     private var statusChangedListener: StatusChangedListener? = null
     private val textPaint: TextPaint = TextPaint()
 
+
     var status: String? = ""
-        private set(newStatus) {
+        set(newStatus) {
             field = newStatus
             statusChangedListener?.onStatusChanged()
         }
@@ -272,6 +281,10 @@ class StrokeManager() {
         return strokeContent
     }
 
+    fun getInk(): MutableList<RecognizedInk> {
+        return inkContent
+    }
+
     // Listeners to update the drawing and status.
     fun setContentChangedListener(contentChangedListener: ContentChangedListener?) {
         this.contentChangedListener = contentChangedListener
@@ -331,6 +344,8 @@ class StrokeManager() {
             }
     }
 
+
+
     companion object {
         @JvmField
         @VisibleForTesting
@@ -340,7 +355,7 @@ class StrokeManager() {
 
         //Find all matching indexes that matches the query
         val matchingIndexes: MutableList<Int> = ArrayList()
-`
+
         //Holding <Stroke,Char> object
 
         val strokeContent: MutableList<RecognizedStroke> = ArrayList()
@@ -352,9 +367,6 @@ class StrokeManager() {
         private const val TIMEOUT_TRIGGER = 1
     }
 }
-
-
-
 
 
 /**
