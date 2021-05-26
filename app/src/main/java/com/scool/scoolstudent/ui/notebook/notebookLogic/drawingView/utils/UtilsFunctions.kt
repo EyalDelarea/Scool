@@ -137,6 +137,7 @@ object UtilsFunctions {
         word: String
     ) {
         var textPaint = TextPaint() //check if it alpha is low
+        //TODO to debug the internet search boxes
        textPaint.alpha = 0
 
         val rect = calBoundingRect(start, count-1, searchStrokeContent)

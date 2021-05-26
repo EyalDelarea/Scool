@@ -1,7 +1,6 @@
 package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
 
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.*
@@ -24,7 +23,6 @@ import io.realm.RealmConfiguration
 import io.realm.RealmResults
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.drawing_view.*
-import java.lang.Exception
 import kotlin.math.max
 import kotlin.math.min
 
@@ -121,10 +119,13 @@ class DrawingView @JvmOverloads constructor(
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val action = event.actionMasked
+        val inputSize = event.getSize()
         val x = event.x
         val y = event.y
+        val isStylus : Boolean = inputSize.toDouble()==0.00
 
-        if (!isInternetSearchOn) {
+
+        if (!isInternetSearchOn && isStylus) {
             when (action) {
                 MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
                 MotionEvent.ACTION_MOVE -> currentStroke.lineTo(x, y) //on motion
