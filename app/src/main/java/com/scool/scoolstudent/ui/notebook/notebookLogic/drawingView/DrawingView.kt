@@ -13,8 +13,18 @@ import android.view.MotionEvent
 import android.view.View
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
+import com.google.gson.Gson
 import com.google.mlkit.vision.digitalink.Ink
+import com.scool.scoolstudent.realm.NotebookRealmObject
+import com.scool.scoolstudent.realm.notesObject.NotebookDataInstanceItem
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.ContentChangedListener
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
+import io.realm.Realm
+import io.realm.RealmConfiguration
+import io.realm.RealmResults
+import io.realm.kotlin.where
+import kotlinx.android.synthetic.main.drawing_view.*
+import java.lang.Exception
 import kotlin.math.max
 import kotlin.math.min
 
@@ -31,7 +41,6 @@ import kotlin.math.min
 class DrawingView @JvmOverloads constructor(
     context: Context?,
     attributeSet: AttributeSet? = null
-
 ) :
     View(context, attributeSet), ContentChangedListener {
     private val recognizedStrokePaint: Paint
@@ -39,13 +48,20 @@ class DrawingView @JvmOverloads constructor(
     private val erasePaint = TextPaint()
     private var preTextPaint = Paint()
     var isEraseOn = false
+    var isInternetSearchOn = false
     private var currentBackgroundColor = 0x0000FF
     private var currentStrokePaint: Paint
     private val canvasPaint: Paint
     private val currentStroke: Path
-    private lateinit var drawCanvas: Canvas
+    private var drawCanvas: Canvas = Canvas()
     private lateinit var canvasBitmap: Bitmap
     private lateinit var strokeManager: StrokeManager
+    private val realmName = "Notebooks"
+    private val config: RealmConfiguration = RealmConfiguration.Builder().name(realmName).build()
+    private var backgroundThreadRealm: Realm = Realm.getInstance(config)
+    private lateinit var notebooks: RealmResults<NotebookRealmObject>
+
+
     fun setStrokeManager(strokeManager: StrokeManager) {
         this.strokeManager = strokeManager
     }
@@ -56,15 +72,19 @@ class DrawingView @JvmOverloads constructor(
         oldWidth: Int,
         oldHeight: Int
     ) {
-        Log.i(TAG, "onSizeChanged")
+        Log.i("eyalo", "onSizeChanged")
         canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         drawCanvas = Canvas(canvasBitmap)
+        //THIS IS THE PLACE TO LOAD THE CONTENT
+        //TODO implement this with intent info
+        //  onLoadPage()
         invalidate()
     }
 
     fun getCanvas(): Canvas {
         return drawCanvas
     }
+
 
     /**
      * Function to handle the flag of the erase state
@@ -99,28 +119,38 @@ class DrawingView @JvmOverloads constructor(
         canvas.drawPath(currentStroke, currentStrokePaint)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val action = event.actionMasked
         val x = event.x
         val y = event.y
-        when (action) {
-            MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
-            MotionEvent.ACTION_MOVE -> currentStroke.lineTo(x, y) //on motion
-            MotionEvent.ACTION_UP -> { //finished
-                currentStroke.lineTo(x, y)
-                drawCanvas.drawPath(currentStroke, currentStrokePaint)
-                currentStroke.reset()
+
+        if (!isInternetSearchOn) {
+            when (action) {
+                MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
+                MotionEvent.ACTION_MOVE -> currentStroke.lineTo(x, y) //on motion
+                MotionEvent.ACTION_UP -> { //finished
+                    currentStroke.lineTo(x, y)
+                    drawCanvas.drawPath(currentStroke, currentStrokePaint)
+                    currentStroke.reset()
+                }
+                else -> {
+                    return false
+                }
             }
-            else -> {
-                return false
+            //Send info to strokeManger
+            strokeManager.addNewTouchEvent(event, isEraseOn)
+            //Calls onDraw to re-render the screen
+            invalidate()
+            return true
+        } else {
+            //Handle internet search
+            when (action) {
+                MotionEvent.ACTION_DOWN -> strokeManager.handleSearchRectTouch(x, y) //start
             }
+
+            return true
         }
-        //Send info to strokeManger
-        strokeManager.addNewTouchEvent(event, isEraseOn)
-        //Calls onDraw to re-render the screen
-        invalidate()
-        return true
+
     }
 
     override fun onContentChanged() {
@@ -142,16 +172,15 @@ class DrawingView @JvmOverloads constructor(
     }
 
 
-//    fun drawInk(ink: Ink, paint: Paint) {
-//        // Log.i("DEBUG", "DrawInk")
-//        for (s in ink.strokes) {
-//            drawStroke(s, paint)
-//        }
-//        invalidate()
-//    }
+    private fun drawInk(ink: Ink) {
+        for (s in ink.strokes) {
+            drawStroke(s, currentStrokePaint)
+        }
+        invalidate()
+        Log.i("eyalo", "invalidated")
+    }
 
-    fun drawStroke(s: Ink.Stroke, paint: Paint) {
-        // Log.i(TAG, "drawstroke")
+    private fun drawStroke(s: Ink.Stroke, paint: Paint) {
         val path = Path()
         path.moveTo(s.points[0].x, s.points[0].y)
         for (p in s.points.drop(1)) {
@@ -160,14 +189,21 @@ class DrawingView @JvmOverloads constructor(
         drawCanvas.drawPath(path, paint)
     }
 
+    fun toggleInternetSearch() {
+
+        isInternetSearchOn = !isInternetSearchOn
+        Log.i("eyalo","toggling,after : $isInternetSearchOn")
+    }
+
 
     companion object {
         private const val TAG = "MLKD.DrawingView"
-        private const val STROKE_WIDTH_DP = 3
+        const val STROKE_WIDTH_DP = 3
         private const val MIN_BB_WIDTH = 10
         private const val MIN_BB_HEIGHT = 10
         private const val MAX_BB_WIDTH = 256
         private const val MAX_BB_HEIGHT = 256
+
         fun computeInkBoundingBox(ink: Ink): Rect {
             var top = Float.MAX_VALUE
             var left = Float.MAX_VALUE
@@ -199,26 +235,8 @@ class DrawingView @JvmOverloads constructor(
 
             val centerX = (left + right) / 2
             val centerY = (top + bottom) / 2
-            val bb =
-                Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
-            bb.union(
-                (centerX - MIN_BB_WIDTH / 2).toInt(),
-                (centerY - MIN_BB_HEIGHT / 2).toInt(),
-                (centerX + MIN_BB_WIDTH / 2).toInt(),
-                (centerY + MIN_BB_HEIGHT / 2).toInt()
-            )
-            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
-            // correctly
-            if (bb.width() > MAX_BB_WIDTH) {
-                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
-                    bb.bottom
-            }
-            if (bb.height() > MAX_BB_HEIGHT) {
-                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
-                    bb.centerY() + MAX_BB_HEIGHT / 2
-            }
-            return bb
+            return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+
         }
     }
 
@@ -255,6 +273,64 @@ class DrawingView @JvmOverloads constructor(
     fun drawSingleBoundingBox(rect: Rect, textPaint: TextPaint) {
         drawCanvas.drawRect(rect, textPaint)
     }
+
+
+    fun onLoadPage() {
+
+        //Query the DB for the name of the notebook
+        //TODO implement names for notebooks
+        backgroundThreadRealm.executeTransactionAsync { bgRealm ->
+            notebooks = bgRealm.where<NotebookRealmObject>().findAll()
+            Log.i("eyalo", "this is notebooks : $notebooks")
+            buildContent()
+        }
+
+    }
+
+    private fun buildContent() {
+        try {
+            var strokeBuilder = Ink.Stroke.builder()
+            var inkBuilder = Ink.builder()
+            val gson = Gson()
+            //Get the content of the notebook
+            val jsonData = notebooks[0]?.content
+            //Set the data
+            val data: List<NotebookDataInstanceItem> =
+                gson.fromJson(jsonData, Array<NotebookDataInstanceItem>::class.java).toList()
+            //Build ink object from data
+            data[0].ink.zza.forEach { stroke ->
+                stroke.zza.forEach { p ->
+                    //build point
+                    strokeBuilder.addPoint(
+                        Ink.Point.create(
+                            p.zza.toFloat(),
+                            p.zzb.toFloat(),
+                            p.zzc
+                        )
+                    )
+                }
+                //build stroke
+                inkBuilder.addStroke(strokeBuilder.build())
+                //set new stroke
+                strokeBuilder = Ink.Stroke.builder()
+            }
+            //build ink object
+            val ink = inkBuilder.build()
+            //feed the data to the drawing view
+            //TODO fix this
+            updateContent(ink, data[0].text)
+        } catch (e: Exception) {
+            //No database or any such error
+            Log.i("eyalo", "$e")
+        }
+    }
+
+    private fun updateContent(ink: Ink, text: String) {
+        strokeManager.status = text
+        strokeManager.inkContent.add(RecognitionTask.RecognizedInk(ink, text))
+        drawInk(ink)
+    }
+
 
     init {
         currentStrokePaint = Paint()

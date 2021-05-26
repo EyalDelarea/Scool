@@ -47,7 +47,9 @@
             android:layout_width="380dp"
             android:layout_height="match_parent"
             android:background="#0A787878"
-            android:queryHint="Search here inside hand writing" />
+            android:queryHint="Search here inside hand writing" >
+
+        </SearchView>
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/drawTools"
@@ -105,7 +107,7 @@
                 android:layout_height="50dp"
                 android:onClick="clearClick"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/saveBtn"
+                app:layout_constraintEnd_toStartOf="@+id/recoBtn"
                 app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/padlet"
                 app:layout_constraintTop_toTopOf="parent"
@@ -126,26 +128,33 @@
                 app:tint="@color/primaryDarkColor" />
 
             <ImageView
-                android:id="@+id/saveBtn"
+                android:id="@+id/recoBtn"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
                 android:onClick="recognizeClick"
                 android:padding="1dp"
                 app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintEnd_toStartOf="@+id/imageView4"
-                app:layout_constraintHorizontal_bias="0.5"
                 app:layout_constraintStart_toEndOf="@+id/cancelBtn"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_done_black_24dp"
                 app:tint="@color/primaryDarkColor" />
 
-            <ImageView
-                android:id="@+id/imageView4"
-                android:layout_width="52dp"
-                android:layout_height="49dp"
-                app:layout_constraintBottom_toBottomOf="@+id/saveBtn"
+            <Spinner
+                android:id="@+id/settingsSpinner"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:alpha="0.6"
+                android:background="@android:drawable/ic_menu_manage"
+
+                android:dropDownSelector="@color/icon_color"
+                android:entries="@array/settings_array"
+                android:spinnerMode="dropdown"
+                android:splitMotionEvents="false"
+                android:textAlignment="center"
+                app:layout_constraintBottom_toBottomOf="@+id/recoBtn"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:srcCompat="@drawable/ic_menu_manage" />
+                app:layout_constraintStart_toEndOf="@+id/recoBtn"
+                app:layout_constraintTop_toTopOf="@+id/recoBtn" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>

@@ -38,6 +38,7 @@
             tools:srcCompat="@tools:sample/avatars[0]" />
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardView2"
             android:layout_width="380dp"
             android:layout_height="305dp"
             android:layout_marginEnd="16dp"
