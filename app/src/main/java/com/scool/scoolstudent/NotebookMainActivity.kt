@@ -53,8 +53,7 @@ class NotebookMainActivity : AppCompatActivity() {
         strokeManager.setActiveModel("he") //default hebrew lang
         strokeManager.download()
 
-        //Trying to load existing notebook
-        drawingView.onLoadPage()
+
 
         //Set up settings spinner
         spinner.onItemSelectedListener = object :
@@ -103,8 +102,6 @@ class NotebookMainActivity : AppCompatActivity() {
         searchBar.setOnCloseListener {
             strokeManager.resetSearchRect(drawingView)
         }
-
-
     } // end of onCrate
 
 

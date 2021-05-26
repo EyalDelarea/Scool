@@ -71,9 +71,12 @@ class DrawingView @JvmOverloads constructor(
         oldWidth: Int,
         oldHeight: Int
     ) {
-        Log.i(TAG, "onSizeChanged")
+        Log.i("eyalo", "onSizeChanged")
         canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         drawCanvas = Canvas(canvasBitmap)
+        //THIS IS THE PLACE TO LOAD THE CONTENT
+        //TODO implement this with intent info
+        onLoadPage()
         invalidate()
     }
 
@@ -255,23 +258,21 @@ class DrawingView @JvmOverloads constructor(
 
 
     fun onLoadPage() {
-        val strokeBuilder = Ink.Stroke.builder()
-        val inkBuilder = Ink.builder()
+
         //Query the DB for the name of the notebook
         //TODO implement names for notebooks
         backgroundThreadRealm.executeTransactionAsync { bgRealm ->
             notebooks = bgRealm.where<NotebookRealmObject>().findAll()
             Log.i("eyalo", "this is notebooks : $notebooks")
-            buildContent(strokeBuilder, inkBuilder)
+            buildContent()
         }
 
     }
 
-    private fun buildContent(
-        strokeBuilder: Ink.Stroke.Builder,
-        inkBuilder: Ink.Builder,
-    ) {
+    private fun buildContent() {
         try {
+            var strokeBuilder = Ink.Stroke.builder()
+            var inkBuilder = Ink.builder()
             val gson = Gson()
             //Get the content of the notebook
             val jsonData = notebooks[0]?.content
@@ -292,12 +293,14 @@ class DrawingView @JvmOverloads constructor(
                 }
                 //build stroke
                 inkBuilder.addStroke(strokeBuilder.build())
+                //set new stroke
+                strokeBuilder = Ink.Stroke.builder()
             }
 
             //Paint the strokes to the screen
             //TODO LOAD THE CONTENT - May fix the async problem
             val ink = inkBuilder.build()
-            drawInk(ink)
+           // drawInk(ink)
             Log.i("eyalo", "Drawd inks from database")
 
             updateContent(ink, data[0].text)
