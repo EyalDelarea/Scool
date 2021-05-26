@@ -1,6 +1,8 @@
 package com.scool.scoolstudent
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Context
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -11,6 +13,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.scool.scoolstudent.realm.NotebookRealmObject
+import com.scool.scoolstudent.ui.notebook.notebookLogic.Components.SpinnerActivity
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
@@ -23,6 +26,7 @@ class NotebookMainActivity : AppCompatActivity() {
     @VisibleForTesting
     val strokeManager = StrokeManager()
     private lateinit var backgroundThreadRealm: Realm
+    private val realmName = "Notebooks"
 
 
     @SuppressLint("ClickableViewAccessibility")
@@ -36,16 +40,51 @@ class NotebookMainActivity : AppCompatActivity() {
         )
         drawingView.setStrokeManager(strokeManager)
         val searchBar = findViewById<SearchView>(R.id.searchView)
+        val spinner: Spinner = findViewById(R.id.settingsSpinner)
 
+        //Setup database connection
+        val config = RealmConfiguration.Builder().name(realmName).build()
+        backgroundThreadRealm = Realm.getInstance(config)
+
+        //Setup Stroke Manager
         statusTextView.setStrokeManager(strokeManager)
         strokeManager.setStatusChangedListener(statusTextView)
         strokeManager.setContentChangedListener(drawingView)
         strokeManager.setActiveModel("he") //default hebrew lang
         strokeManager.download()
 
+        //Trying to load existing notebook
+        drawingView.onLoadPage()
 
+        //Set up settings spinner
+        spinner.onItemSelectedListener = object :
+            AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                when (position) {
+                    1 -> {
+                        Toast.makeText(
+                            this@NotebookMainActivity,
+                            "Notebook has been saved!",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        savePage(drawingView)
+                    }
+                    2 -> Toast.makeText(
+                        this@NotebookMainActivity,
+                        "This will display all kind of settings...be patient!",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
 
-
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+            }
+        }
         //Search function
         searchBar.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(newText: String?): Boolean {
@@ -64,8 +103,7 @@ class NotebookMainActivity : AppCompatActivity() {
         searchBar.setOnCloseListener {
             strokeManager.resetSearchRect(drawingView)
         }
-        //Trying to load existing notebook
-        drawingView.onLoadPage()
+
 
     } // end of onCrate
 
@@ -74,7 +112,7 @@ class NotebookMainActivity : AppCompatActivity() {
 
         val savedNotebook = NotebookRealmObject()
         //TODO implement notebook name
-        savedNotebook.name = "notebookName"
+        savedNotebook.name = "{${System.currentTimeMillis()}}"
         var gson = Gson()
         var json = gson.toJson(strokeManager.getInk()).toString()
         savedNotebook.content = json

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="settings_array">
+        <!--        First item for blank -->
+        <item></item>
+        <item>Save</item>
+        <item>Settings</item>
+    </string-array>
+</resources>

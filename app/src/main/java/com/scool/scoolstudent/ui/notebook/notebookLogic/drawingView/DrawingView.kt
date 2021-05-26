@@ -24,6 +24,7 @@ import io.realm.RealmConfiguration
 import io.realm.RealmResults
 import io.realm.kotlin.where
 import kotlinx.android.synthetic.main.drawing_view.*
+import java.lang.Exception
 import kotlin.math.max
 import kotlin.math.min
 
@@ -165,7 +166,6 @@ class DrawingView @JvmOverloads constructor(
     }
 
     fun drawStroke(s: Ink.Stroke, paint: Paint) {
-        // Log.i(TAG, "drawstroke")
         val path = Path()
         path.moveTo(s.points[0].x, s.points[0].y)
         for (p in s.points.drop(1)) {
@@ -214,26 +214,8 @@ class DrawingView @JvmOverloads constructor(
 
             val centerX = (left + right) / 2
             val centerY = (top + bottom) / 2
-            val bb =
-                Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-            // Enforce a minimum size of the bounding box such that recognitions for small inks are readable
-            bb.union(
-                (centerX - MIN_BB_WIDTH / 2).toInt(),
-                (centerY - MIN_BB_HEIGHT / 2).toInt(),
-                (centerX + MIN_BB_WIDTH / 2).toInt(),
-                (centerY + MIN_BB_HEIGHT / 2).toInt()
-            )
-            // Enforce a maximum size of the bounding box, to ensure Emoji characters get displayed
-            // correctly
-            if (bb.width() > MAX_BB_WIDTH) {
-                bb[bb.centerX() - MAX_BB_WIDTH / 2, bb.top, bb.centerX() + MAX_BB_WIDTH / 2] =
-                    bb.bottom
-            }
-            if (bb.height() > MAX_BB_HEIGHT) {
-                bb[bb.left, bb.centerY() - MAX_BB_HEIGHT / 2, bb.right] =
-                    bb.centerY() + MAX_BB_HEIGHT / 2
-            }
-            return bb
+            return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
+
         }
     }
 
@@ -289,32 +271,41 @@ class DrawingView @JvmOverloads constructor(
         strokeBuilder: Ink.Stroke.Builder,
         inkBuilder: Ink.Builder,
     ) {
-        val gson = Gson()
-        //Get the content of the notebook
-        val jsonData = notebooks[0]?.content
-        //Set the data
-
-        val data: List<NotebookDataInstanceItem> =
-            gson.fromJson(jsonData, Array<NotebookDataInstanceItem>::class.java).toList()
-        //Build ink object from data
-        data[0].ink.zza.forEach { stroke ->
-            stroke.zza.forEach { p ->
-                //build point
-                strokeBuilder.addPoint(Ink.Point.create(p.zza.toFloat(), p.zzb.toFloat(), p.zzc))
+        try {
+            val gson = Gson()
+            //Get the content of the notebook
+            val jsonData = notebooks[0]?.content
+            //Set the data
+            val data: List<NotebookDataInstanceItem> =
+                gson.fromJson(jsonData, Array<NotebookDataInstanceItem>::class.java).toList()
+            //Build ink object from data
+            data[0].ink.zza.forEach { stroke ->
+                stroke.zza.forEach { p ->
+                    //build point
+                    strokeBuilder.addPoint(
+                        Ink.Point.create(
+                            p.zza.toFloat(),
+                            p.zzb.toFloat(),
+                            p.zzc
+                        )
+                    )
+                }
+                //build stroke
+                inkBuilder.addStroke(strokeBuilder.build())
             }
-            //build stroke
-            inkBuilder.addStroke(strokeBuilder.build())
+
+            //Paint the strokes to the screen
+            //TODO LOAD THE CONTENT - May fix the async problem
+            val ink = inkBuilder.build()
+            drawInk(ink)
+            Log.i("eyalo", "Drawd inks from database")
+
+            updateContent(ink, data[0].text)
+
+            //TODO Update content and status text
+        } catch (e: Exception) {
+            Log.i("eyalo", "$e")
         }
-
-        //Paint the strokes to the screen
-        //TODO LOAD THE CONTENT - May fix the async problem
-        val ink = inkBuilder.build()
-        drawInk(ink)
-        Log.i("eyalo", "Drawd inks from database")
-
-        updateContent(ink, data[0].text)
-
-        //TODO Update content and status text
 
     }
 
