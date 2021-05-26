@@ -4,6 +4,8 @@
         <!--        First item for blank -->
         <item></item>
         <item>Save</item>
+        <item>Internet Search</item>
+        <item>Drawing Mode</item>
         <item>Settings</item>
     </string-array>
 </resources>

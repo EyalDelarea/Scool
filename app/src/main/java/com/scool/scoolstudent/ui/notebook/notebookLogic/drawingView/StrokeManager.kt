@@ -1,37 +1,34 @@
 package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
 
-import android.graphics.Color
-import android.graphics.Paint
+import android.app.AlertDialog
+import android.content.Context
+import android.content.DialogInterface
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Message
 import android.text.TextPaint
 import android.util.Log
-import android.util.TypedValue
 import android.view.MotionEvent
 import androidx.annotation.VisibleForTesting
 import com.google.android.gms.tasks.SuccessContinuation
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.gson.Gson
-import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask.RecognizedInk
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
-import com.scool.scoolstudent.realm.NotebookRealmObject
-import com.scool.scoolstudent.realm.notesObject.NotebookDataInstanceItem
+import com.scool.scoolstudent.MainActivity
+import com.scool.scoolstudent.NotebookMainActivity
+import com.scool.scoolstudent.ui.notebook.notebookLogic.Components.InternetSearchRect
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.RecognizedStroke
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.ModelManager
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask.RecognizedInk
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.UtilsFunctions.markInternetRects
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.UtilsFunctions.markTextOnScreen
-import io.realm.Realm
-import io.realm.RealmConfiguration
-import io.realm.RealmResults
-import io.realm.kotlin.where
-
+import kotlinx.serialization.*
 import java.util.*
 import kotlin.collections.ArrayDeque
 import kotlin.collections.ArrayList
-import kotlinx.serialization.*
+
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
 class StrokeManager() {
@@ -67,8 +64,13 @@ class StrokeManager() {
     //Hold search rect views
     private val searchRect: MutableList<Rect> = ArrayList()
 
+    //Hold internet search Rect
+    val internetSearchRect: MutableList<InternetSearchRect> = ArrayList()
+
     //Stack for the use of undo & redo
     private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
+
+    lateinit var parentContext: Context
 
 
     // Managing ink currently drawn.
@@ -140,8 +142,6 @@ class StrokeManager() {
         strokeContent.forEach {
             searchStrokeContent.add(it)
         }
-
-
         //For each word separately mark text on screen
         //When index is marked on screen, it is removed from the list
         for (i in list) {
@@ -235,6 +235,77 @@ class StrokeManager() {
     val currentInk: Ink
         get() = inkBuilder.build()
 
+    fun handleSearchRectTouch(x: Float, y: Float) {
+        internetSearchRect.forEach {
+            if (it.contains(x, y)) {
+                Log.i("eyalo", "i've been clicked! $it.text")
+                var dialog: AlertDialog.Builder = AlertDialog.Builder(parentContext)
+                dialog.setMessage("Search the web for : ${it.txt} ?").setPositiveButton("Go!",DialogInterface.OnClickListener{
+                    dialog, which ->
+                    //open web
+                }).setNegativeButton("Cancel",DialogInterface.OnClickListener{
+                    dialog, which ->dialog.dismiss()
+                })
+
+                dialog.create()
+                dialog.show()
+
+            }
+        }
+    }
+
+    fun buildInternetSearchRect(drawingView: DrawingView) {
+        val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
+        //Create new instance to handle duplicates
+        val searchInkContent: MutableList<RecognizedInk> = ArrayList()
+        inkContent.forEach {
+            searchInkContent.add(it)
+        }
+
+        //iterate over all the text
+        val text = StringBuilder()
+        //Stroke Count
+        var count = 0
+        //From where to start
+        var start = 0
+        searchInkContent.forEach { ink ->
+            ink.text?.forEach { char ->
+                //Add to rect boundingBox
+                if (specialChars.contains(char)) {
+                    count += 2
+                    text.append(char)
+                } else {
+                    if (char == ' ') {
+                        //stop adding,reset
+                        markInternetRects(
+                            drawingView,
+                            strokeContent,
+                            internetSearchRect,
+                            start,
+                            count,
+                            text.toString()
+                        )
+                        start = count
+                        count = 0
+                        text.clear()
+                    } else {
+                        count++
+                        text.append(char)
+                    }
+                }
+
+            }
+            //last word
+            markInternetRects(
+                drawingView,
+                strokeContent,
+                internetSearchRect,
+                start,
+                count,
+                text.toString()
+            )
+        }
+    }
 
     /**
      * This method is called when a new touch event happens on the drawing client and notifies the
@@ -345,7 +416,6 @@ class StrokeManager() {
     }
 
 
-
     companion object {
         @JvmField
         @VisibleForTesting
@@ -357,7 +427,6 @@ class StrokeManager() {
         val matchingIndexes: MutableList<Int> = ArrayList()
 
         //Holding <Stroke,Char> object
-
         val strokeContent: MutableList<RecognizedStroke> = ArrayList()
 
 
@@ -379,7 +448,7 @@ class StrokeManager() {
  */
 private fun MutableList<RecognizedStroke>.add(recognizedInk: RecognizedInk) {
     //remove spaces
-    val noSpacesText = recognizedInk.text?.replace("\\s".toRegex(), "")
+    val noSpacesText = recognizedInk.text?.replace("\\s".toRegex(), "")!!
     val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
     var textIndex = 0 //iterate over the non spaces text
     var strokeIndex = 0 //iterate of the strokes array

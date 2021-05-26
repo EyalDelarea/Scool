@@ -48,6 +48,7 @@ class DrawingView @JvmOverloads constructor(
     private val erasePaint = TextPaint()
     private var preTextPaint = Paint()
     var isEraseOn = false
+    var isInternetSearchOn = false
     private var currentBackgroundColor = 0x0000FF
     private var currentStrokePaint: Paint
     private val canvasPaint: Paint
@@ -55,8 +56,8 @@ class DrawingView @JvmOverloads constructor(
     private var drawCanvas: Canvas = Canvas()
     private lateinit var canvasBitmap: Bitmap
     private lateinit var strokeManager: StrokeManager
-    val realmName = "Notebooks"
-    val config = RealmConfiguration.Builder().name(realmName).build()
+    private val realmName = "Notebooks"
+    private val config: RealmConfiguration = RealmConfiguration.Builder().name(realmName).build()
     private var backgroundThreadRealm: Realm = Realm.getInstance(config)
     private lateinit var notebooks: RealmResults<NotebookRealmObject>
 
@@ -76,13 +77,14 @@ class DrawingView @JvmOverloads constructor(
         drawCanvas = Canvas(canvasBitmap)
         //THIS IS THE PLACE TO LOAD THE CONTENT
         //TODO implement this with intent info
-        onLoadPage()
+        //  onLoadPage()
         invalidate()
     }
 
     fun getCanvas(): Canvas {
         return drawCanvas
     }
+
 
     /**
      * Function to handle the flag of the erase state
@@ -117,28 +119,38 @@ class DrawingView @JvmOverloads constructor(
         canvas.drawPath(currentStroke, currentStrokePaint)
     }
 
-    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val action = event.actionMasked
         val x = event.x
         val y = event.y
-        when (action) {
-            MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
-            MotionEvent.ACTION_MOVE -> currentStroke.lineTo(x, y) //on motion
-            MotionEvent.ACTION_UP -> { //finished
-                currentStroke.lineTo(x, y)
-                drawCanvas.drawPath(currentStroke, currentStrokePaint)
-                currentStroke.reset()
+
+        if (!isInternetSearchOn) {
+            when (action) {
+                MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
+                MotionEvent.ACTION_MOVE -> currentStroke.lineTo(x, y) //on motion
+                MotionEvent.ACTION_UP -> { //finished
+                    currentStroke.lineTo(x, y)
+                    drawCanvas.drawPath(currentStroke, currentStrokePaint)
+                    currentStroke.reset()
+                }
+                else -> {
+                    return false
+                }
             }
-            else -> {
-                return false
+            //Send info to strokeManger
+            strokeManager.addNewTouchEvent(event, isEraseOn)
+            //Calls onDraw to re-render the screen
+            invalidate()
+            return true
+        } else {
+            //Handle internet search
+            when (action) {
+                MotionEvent.ACTION_DOWN -> strokeManager.handleSearchRectTouch(x, y) //start
             }
+
+            return true
         }
-        //Send info to strokeManger
-        strokeManager.addNewTouchEvent(event, isEraseOn)
-        //Calls onDraw to re-render the screen
-        invalidate()
-        return true
+
     }
 
     override fun onContentChanged() {
@@ -168,13 +180,19 @@ class DrawingView @JvmOverloads constructor(
         Log.i("eyalo", "invalidated")
     }
 
-    fun drawStroke(s: Ink.Stroke, paint: Paint) {
+    private fun drawStroke(s: Ink.Stroke, paint: Paint) {
         val path = Path()
         path.moveTo(s.points[0].x, s.points[0].y)
         for (p in s.points.drop(1)) {
             path.lineTo(p.x, p.y)
         }
         drawCanvas.drawPath(path, paint)
+    }
+
+    fun toggleInternetSearch() {
+
+        isInternetSearchOn = !isInternetSearchOn
+        Log.i("eyalo","toggling,after : $isInternetSearchOn")
     }
 
 
@@ -296,20 +314,15 @@ class DrawingView @JvmOverloads constructor(
                 //set new stroke
                 strokeBuilder = Ink.Stroke.builder()
             }
-
-            //Paint the strokes to the screen
-            //TODO LOAD THE CONTENT - May fix the async problem
+            //build ink object
             val ink = inkBuilder.build()
-           // drawInk(ink)
-            Log.i("eyalo", "Drawd inks from database")
-
+            //feed the data to the drawing view
+            //TODO fix this
             updateContent(ink, data[0].text)
-
-            //TODO Update content and status text
         } catch (e: Exception) {
+            //No database or any such error
             Log.i("eyalo", "$e")
         }
-
     }
 
     private fun updateContent(ink: Ink, text: String) {

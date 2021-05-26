@@ -3,8 +3,10 @@ package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils
 import android.graphics.Rect
 import android.text.TextPaint
 import com.google.mlkit.vision.digitalink.Ink
+import com.scool.scoolstudent.ui.notebook.notebookLogic.Components.InternetSearchRect
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
+import org.w3c.dom.Text
 
 
 object UtilsFunctions {
@@ -117,6 +119,29 @@ object UtilsFunctions {
                 }
             }
         }
+    }
+
+    /**
+     * Marks the text on screen (yellow highlight)
+     * Drawing view - the view which will be highlighted
+     * strokeContent - <Stroke,Char> list
+     * searchRect - list of highlighted Rect already shown
+     *
+     */
+    fun markInternetRects(
+        drawingView: DrawingView,
+        searchStrokeContent: MutableList<StrokeManager.RecognizedStroke>,
+        searchRect: MutableList<InternetSearchRect>,
+        start: Int,
+        count: Int,
+        word: String
+    ) {
+        var textPaint = TextPaint() //check if it alpha is low
+       textPaint.alpha = 0
+
+        val rect = calBoundingRect(start, count-1, searchStrokeContent)
+        searchRect.add(InternetSearchRect(rect, word)) //add to rect stack
+        drawingView.drawSingleBoundingBox(rect, textPaint) //draw rect
     }
 
     private fun removeMarkedStrokesFromList(

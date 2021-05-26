@@ -1,11 +1,9 @@
 package com.scool.scoolstudent
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.content.Context
+import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.*
 import androidx.annotation.RequiresApi
@@ -13,7 +11,6 @@ import androidx.annotation.VisibleForTesting
 import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import com.scool.scoolstudent.realm.NotebookRealmObject
-import com.scool.scoolstudent.ui.notebook.notebookLogic.Components.SpinnerActivity
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
@@ -52,6 +49,9 @@ class NotebookMainActivity : AppCompatActivity() {
         strokeManager.setContentChangedListener(drawingView)
         strokeManager.setActiveModel("he") //default hebrew lang
         strokeManager.download()
+        strokeManager.parentContext = this
+
+
 
 
 
@@ -73,7 +73,28 @@ class NotebookMainActivity : AppCompatActivity() {
                         ).show()
                         savePage(drawingView)
                     }
-                    2 -> Toast.makeText(
+                    2 -> {
+                        Toast.makeText(
+                            this@NotebookMainActivity,
+                            "Click on each word to search it online",
+                            Toast.LENGTH_LONG
+                        ).show()
+                        //Map each word
+                        strokeManager.buildInternetSearchRect(drawingView)
+                        //Toggle flag
+                        drawingView.toggleInternetSearch()
+
+                    }
+                    3 -> {
+                        //Toggle flag
+                        drawingView.toggleInternetSearch()
+                        Toast.makeText(
+                            this@NotebookMainActivity,
+                            "Now you can draw back on the screen",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    4 -> Toast.makeText(
                         this@NotebookMainActivity,
                         "This will display all kind of settings...be patient!",
                         Toast.LENGTH_LONG
@@ -102,23 +123,20 @@ class NotebookMainActivity : AppCompatActivity() {
         searchBar.setOnCloseListener {
             strokeManager.resetSearchRect(drawingView)
         }
+
     } // end of onCrate
 
 
     fun savePage(v: View?) {
-
         val savedNotebook = NotebookRealmObject()
         //TODO implement notebook name
         savedNotebook.name = "{${System.currentTimeMillis()}}"
         var gson = Gson()
         var json = gson.toJson(strokeManager.getInk()).toString()
         savedNotebook.content = json
-
         backgroundThreadRealm.executeTransactionAsync { transactionRealm ->
             transactionRealm.insert(savedNotebook)
         }
-
-        Log.i("eyalo", "insrted ! ")
     }
 
 
