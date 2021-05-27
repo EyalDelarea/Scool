@@ -6,6 +6,8 @@
         <item>Save</item>
         <item>Internet Search</item>
         <item>Drawing Mode</item>
+        <item>Stylus Only Mode</item>
+        <item>Enable Hand Writing</item>
         <item>Settings</item>
     </string-array>
 </resources>

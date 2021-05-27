@@ -1,12 +1,18 @@
+@file:Suppress("UNUSED_VARIABLE")
+
 package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils
 
 import android.graphics.Rect
 import android.text.TextPaint
+import android.util.Log
+import com.google.gson.Gson
 import com.google.mlkit.vision.digitalink.Ink
+import com.scool.scoolstudent.realm.NotebookRealmObject
+import com.scool.scoolstudent.realm.notesObject.NotebookDataInstanceItem
 import com.scool.scoolstudent.ui.notebook.notebookLogic.Components.InternetSearchRect
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager
-import org.w3c.dom.Text
+import io.realm.RealmResults
 
 
 object UtilsFunctions {
@@ -136,11 +142,10 @@ object UtilsFunctions {
         count: Int,
         word: String
     ) {
-        var textPaint = TextPaint() //check if it alpha is low
-        //TODO to debug the internet search boxes
-       textPaint.alpha = 0
+        val textPaint = TextPaint() //check if it alpha is low
+        textPaint.alpha = 0
 
-        val rect = calBoundingRect(start, count-1, searchStrokeContent)
+        val rect = calBoundingRect(start, count - 1, searchStrokeContent)
         searchRect.add(InternetSearchRect(rect, word)) //add to rect stack
         drawingView.drawSingleBoundingBox(rect, textPaint) //draw rect
     }
@@ -172,6 +177,47 @@ private fun String.replace(oldChar: Char?, newChar: String): Any {
             )
         }
     }
-
 }
+
+/**
+ *
+ */
+fun buildContent(notebooks: RealmResults<NotebookRealmObject>): Pair<Ink, String> {
+    try {
+        var strokeBuilder = Ink.Stroke.builder()
+        val inkBuilder = Ink.builder()
+        val gson = Gson()
+        //Get the content of the notebook
+        val jsonData = notebooks[0]?.content
+        //Set the data
+        val data: List<NotebookDataInstanceItem> =
+            gson.fromJson(jsonData, Array<NotebookDataInstanceItem>::class.java).toList()
+        //Build ink object from data
+        data[0].ink.zza.forEach { stroke ->
+            stroke.zza.forEach { p ->
+                //build point
+                strokeBuilder.addPoint(
+                    Ink.Point.create(
+                        p.zza.toFloat(),
+                        p.zzb.toFloat(),
+                        p.zzc
+                    )
+                )
+            }
+            //build stroke
+            inkBuilder.addStroke(strokeBuilder.build())
+            //set new stroke
+            strokeBuilder = Ink.Stroke.builder()
+        }
+        //build ink object
+        val ink = inkBuilder.build()
+        return Pair(ink, data[0].text)
+    } catch (e: Exception) {
+        //No database or any such error
+        Log.i("eyalo", "$e")
+    }
+    return Pair(Ink.builder().build(), "0")
+}
+
+
 

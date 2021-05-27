@@ -1,7 +1,6 @@
 package com.scool.scoolstudent
 
 import android.annotation.SuppressLint
-import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -51,10 +50,6 @@ class NotebookMainActivity : AppCompatActivity() {
         strokeManager.download()
         strokeManager.parentContext = this
 
-
-
-
-
         //Set up settings spinner
         spinner.onItemSelectedListener = object :
             AdapterView.OnItemSelectedListener {
@@ -66,39 +61,30 @@ class NotebookMainActivity : AppCompatActivity() {
             ) {
                 when (position) {
                     1 -> {
-                        Toast.makeText(
-                            this@NotebookMainActivity,
-                            "Notebook has been saved!",
-                            Toast.LENGTH_LONG
-                        ).show()
-                        savePage(drawingView)
+                        makeToast("Notebook has been saved!")
+                        //  savePage(drawingView)
                     }
                     2 -> {
-                        Toast.makeText(
-                            this@NotebookMainActivity,
-                            "Click on each word to search it online",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        makeToast("Click on each word to search it online")
                         //Map each word
                         strokeManager.buildInternetSearchRect(drawingView)
                         //Toggle flag
                         drawingView.toggleInternetSearch()
-
                     }
                     3 -> {
                         //Toggle flag
                         drawingView.toggleInternetSearch()
-                        Toast.makeText(
-                            this@NotebookMainActivity,
-                            "Now you can draw back on the screen",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        makeToast("Now you can draw back on the screen")
                     }
-                    4 -> Toast.makeText(
-                        this@NotebookMainActivity,
-                        "This will display all kind of settings...be patient!",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    4 -> {
+                        drawingView.setStylusOnlyMode()
+                        makeToast("You can write ONLY with the pen now!")
+                    }
+                    5 -> {
+                        drawingView.setHandWritingEnabled()
+                        makeToast("You can write with your hand now!")
+                    }
+                    6 -> makeToast("This will display all kind of settings...be patient!")
                 }
             }
 
@@ -126,13 +112,17 @@ class NotebookMainActivity : AppCompatActivity() {
 
     } // end of onCrate
 
+    fun makeToast(txt: String) {
+        Toast.makeText(this, txt, Toast.LENGTH_LONG).show()
+    }
 
-    fun savePage(v: View?) {
+
+    fun savePage() {
         val savedNotebook = NotebookRealmObject()
         //TODO implement notebook name
         savedNotebook.name = "{${System.currentTimeMillis()}}"
-        var gson = Gson()
-        var json = gson.toJson(strokeManager.getInk()).toString()
+        val gson = Gson()
+        val json = gson.toJson(strokeManager.getInk()).toString()
         savedNotebook.content = json
         backgroundThreadRealm.executeTransactionAsync { transactionRealm ->
             transactionRealm.insert(savedNotebook)
@@ -140,42 +130,30 @@ class NotebookMainActivity : AppCompatActivity() {
     }
 
 
-    fun clearClick(v: View?) {
+    fun clearClick() {
         strokeManager.reset()
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.clear()
     }
 
 
-//    fun eraseClick(v: View?) {
-//        val drawingView = findViewById<DrawingView>(R.id.drawing_view)
-//
-//        if (!drawingView.isEraseOn) {
-//            eraseButton.setBackgroundColor(Color.RED)
-//        } else {
-//            eraseButton.setBackgroundColor(Color.BLUE)
-//        }
-//        drawingView.onEraseClick()
-//
-//    }
-
-    fun colorPickerClicked(v: View?) {
+    fun colorPickerClicked() {
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.showColorPicker()
     }
 
 
-    fun recognizeClick(view: View) {
+    fun recognizeClick() {
         strokeManager.recognize()
     }
 
-    fun undo(view: View?) {
+    fun undo() {
         if (!strokeManager.undo()) {
             Toast.makeText(this, "Stack is empty", Toast.LENGTH_LONG).show()
         }
     }
 
-    fun redo(view: View) {
+    fun redo() {
         if (!strokeManager.redo()) {
             Toast.makeText(this, "Nothing to restore", Toast.LENGTH_LONG).show()
         }

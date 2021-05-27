@@ -1,8 +1,8 @@
 package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
 
 
+import android.annotation.SuppressLint
 import android.content.Context
-import android.content.DialogInterface
 import android.graphics.*
 import android.text.TextPaint
 import android.util.AttributeSet
@@ -12,17 +12,15 @@ import android.view.MotionEvent
 import android.view.View
 import com.flask.colorpicker.ColorPickerView
 import com.flask.colorpicker.builder.ColorPickerDialogBuilder
-import com.google.gson.Gson
 import com.google.mlkit.vision.digitalink.Ink
 import com.scool.scoolstudent.realm.NotebookRealmObject
-import com.scool.scoolstudent.realm.notesObject.NotebookDataInstanceItem
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.ContentChangedListener
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.RecognitionTask
+import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.buildContent
 import io.realm.Realm
 import io.realm.RealmConfiguration
 import io.realm.RealmResults
 import io.realm.kotlin.where
-import kotlinx.android.synthetic.main.drawing_view.*
 import kotlin.math.max
 import kotlin.math.min
 
@@ -42,13 +40,13 @@ class DrawingView @JvmOverloads constructor(
 ) :
     View(context, attributeSet), ContentChangedListener {
     private val recognizedStrokePaint: Paint
+    private var stylusSize: Double = 0.0
     private var markerPaint: TextPaint
     private val erasePaint = TextPaint()
-    private var preTextPaint = Paint()
-    var isEraseOn = false
+    private var isEraseOn = false
     var isInternetSearchOn = false
     private var currentBackgroundColor = 0x0000FF
-    private var currentStrokePaint: Paint
+    private var currentStrokePaint: Paint = Paint()
     private val canvasPaint: Paint
     private val currentStroke: Path
     private var drawCanvas: Canvas = Canvas()
@@ -79,25 +77,20 @@ class DrawingView @JvmOverloads constructor(
         invalidate()
     }
 
-    fun getCanvas(): Canvas {
-        return drawCanvas
-    }
-
-
-    /**
-     * Function to handle the flag of the erase state
-     * and the paint to save the last paint.
-     */
-    fun onEraseClick() {
-        if (!isEraseOn) {
-            isEraseOn = true
-            preTextPaint = currentStrokePaint
-            currentStrokePaint = erasePaint
-        } else {
-            isEraseOn = false
-            currentStrokePaint = preTextPaint
-        }
-    }
+//    /**
+//     * Function to handle the flag of the erase state
+//     * and the paint to save the last paint.
+//     */
+//    fun onEraseClick() {
+//        if (!isEraseOn) {
+//            isEraseOn = true
+//            preTextPaint = currentStrokePaint
+//            currentStrokePaint = erasePaint
+//        } else {
+//            isEraseOn = false
+//            currentStrokePaint = preTextPaint
+//        }
+//    }
 
     fun clear() {
         currentStroke.reset()
@@ -117,14 +110,16 @@ class DrawingView @JvmOverloads constructor(
         canvas.drawPath(currentStroke, currentStrokePaint)
     }
 
+    /**
+     *
+     */
+    @SuppressLint("ClickableViewAccessibility")
     override fun onTouchEvent(event: MotionEvent): Boolean {
         val action = event.actionMasked
-        val inputSize = event.getSize()
+        val inputSize = event.size
         val x = event.x
         val y = event.y
-        val isStylus : Boolean = inputSize.toDouble()==0.00
-
-
+        val isStylus: Boolean = inputSize.toDouble() == stylusSize
         if (!isInternetSearchOn && isStylus) {
             when (action) {
                 MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
@@ -148,7 +143,6 @@ class DrawingView @JvmOverloads constructor(
             when (action) {
                 MotionEvent.ACTION_DOWN -> strokeManager.handleSearchRectTouch(x, y) //start
             }
-
             return true
         }
 
@@ -191,20 +185,74 @@ class DrawingView @JvmOverloads constructor(
     }
 
     fun toggleInternetSearch() {
-
         isInternetSearchOn = !isInternetSearchOn
-        Log.i("eyalo","toggling,after : $isInternetSearchOn")
+    }
+
+    fun setHandWritingEnabled() {
+        stylusSize = 0.2
+    }
+
+    fun setStylusOnlyMode() {
+        stylusSize = 0.0
+    }
+
+    //Helper function for showColorPicker
+    private fun changeBackgroundColor(color: Int) {
+        currentBackgroundColor = color
+    }
+
+    fun drawSingleBoundingBox(rect: Rect, textPaint: TextPaint) {
+        drawCanvas.drawRect(rect, textPaint)
+    }
+
+
+//    fun onLoadPage() {
+//        //Query the DB for the name of the notebook
+//        //TODO implement names for notebooks
+//        backgroundThreadRealm.executeTransactionAsync { bgRealm ->
+//            notebooks = bgRealm.where<NotebookRealmObject>().findAll()
+//            Log.i("eyalo", "this is notebooks : $notebooks")
+//            val pair = buildContent(notebooks)
+//            updateContent(pair.first, pair.second)
+//        }
+//
+//    }
+
+    private fun updateContent(ink: Ink, text: String) {
+        strokeManager.status = text
+        strokeManager.inkContent.add(RecognitionTask.RecognizedInk(ink, text))
+        drawInk(ink)
+    }
+
+    /**
+     * Shows color picker dialog
+     */
+    //TODO move to util \ components
+    fun showColorPicker() {
+        ColorPickerDialogBuilder
+            .with(context)
+            .setTitle("Choose color")
+            .initialColor(currentBackgroundColor)
+            .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
+            .density(15)
+            .setOnColorSelectedListener {
+                currentStrokePaint.color = it
+                recognizedStrokePaint.color = it
+            }
+            .setPositiveButton(
+                "ok"
+            )
+            { _, selectedColor, _ -> changeBackgroundColor(selectedColor) }
+            .setNegativeButton("cancel") { _, _ -> }
+            .showColorPreview(true)
+            .build()
+            .show()
     }
 
 
     companion object {
         private const val TAG = "MLKD.DrawingView"
         const val STROKE_WIDTH_DP = 3
-        private const val MIN_BB_WIDTH = 10
-        private const val MIN_BB_HEIGHT = 10
-        private const val MAX_BB_WIDTH = 256
-        private const val MAX_BB_HEIGHT = 256
-
         fun computeInkBoundingBox(ink: Ink): Rect {
             var top = Float.MAX_VALUE
             var left = Float.MAX_VALUE
@@ -233,108 +281,12 @@ class DrawingView @JvmOverloads constructor(
                 bottom = max(bottom, p.y)
                 right = max(right, p.x)
             }
-
-            val centerX = (left + right) / 2
-            val centerY = (top + bottom) / 2
             return Rect(left.toInt(), top.toInt(), right.toInt(), bottom.toInt())
-
         }
-    }
-
-
-    /**
-     * Shows color picker dialog
-     */
-    fun showColorPicker() {
-        ColorPickerDialogBuilder
-            .with(context)
-            .setTitle("Choose color")
-            .initialColor(currentBackgroundColor)
-            .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-            .density(15)
-            .setOnColorSelectedListener {
-                currentStrokePaint.color = it
-                recognizedStrokePaint.color = it
-            }
-            .setPositiveButton(
-                "ok"
-            )
-            { dialog, selectedColor, allColors -> changeBackgroundColor(selectedColor) }
-            .setNegativeButton("cancel", DialogInterface.OnClickListener { dialog, which -> })
-            .showColorPreview(true)
-            .build()
-            .show()
-    }
-
-    //Helper function for showColorPicker
-    private fun changeBackgroundColor(color: Int) {
-        currentBackgroundColor = color
-    }
-
-    fun drawSingleBoundingBox(rect: Rect, textPaint: TextPaint) {
-        drawCanvas.drawRect(rect, textPaint)
-    }
-
-
-    fun onLoadPage() {
-
-        //Query the DB for the name of the notebook
-        //TODO implement names for notebooks
-        backgroundThreadRealm.executeTransactionAsync { bgRealm ->
-            notebooks = bgRealm.where<NotebookRealmObject>().findAll()
-            Log.i("eyalo", "this is notebooks : $notebooks")
-            buildContent()
-        }
-
-    }
-
-    private fun buildContent() {
-        try {
-            var strokeBuilder = Ink.Stroke.builder()
-            var inkBuilder = Ink.builder()
-            val gson = Gson()
-            //Get the content of the notebook
-            val jsonData = notebooks[0]?.content
-            //Set the data
-            val data: List<NotebookDataInstanceItem> =
-                gson.fromJson(jsonData, Array<NotebookDataInstanceItem>::class.java).toList()
-            //Build ink object from data
-            data[0].ink.zza.forEach { stroke ->
-                stroke.zza.forEach { p ->
-                    //build point
-                    strokeBuilder.addPoint(
-                        Ink.Point.create(
-                            p.zza.toFloat(),
-                            p.zzb.toFloat(),
-                            p.zzc
-                        )
-                    )
-                }
-                //build stroke
-                inkBuilder.addStroke(strokeBuilder.build())
-                //set new stroke
-                strokeBuilder = Ink.Stroke.builder()
-            }
-            //build ink object
-            val ink = inkBuilder.build()
-            //feed the data to the drawing view
-            //TODO fix this
-            updateContent(ink, data[0].text)
-        } catch (e: Exception) {
-            //No database or any such error
-            Log.i("eyalo", "$e")
-        }
-    }
-
-    private fun updateContent(ink: Ink, text: String) {
-        strokeManager.status = text
-        strokeManager.inkContent.add(RecognitionTask.RecognizedInk(ink, text))
-        drawInk(ink)
     }
 
 
     init {
-        currentStrokePaint = Paint()
         currentStrokePaint.color = Color.BLACK // black.
         currentStrokePaint.isAntiAlias = true
         // Set stroke width based on display density.
@@ -355,7 +307,6 @@ class DrawingView @JvmOverloads constructor(
         //eraser
         erasePaint.color = Color.WHITE
         erasePaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN)
-
         currentStroke = Path()
         canvasPaint = Paint(Paint.DITHER_FLAG)
     }

@@ -2,7 +2,6 @@ package com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView
 
 import android.app.AlertDialog
 import android.content.Context
-import android.content.DialogInterface
 import android.graphics.Rect
 import android.os.Handler
 import android.os.Message
@@ -15,8 +14,6 @@ import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.mlkit.vision.digitalink.Ink
 import com.google.mlkit.vision.digitalink.Ink.Stroke
-import com.scool.scoolstudent.MainActivity
-import com.scool.scoolstudent.NotebookMainActivity
 import com.scool.scoolstudent.ui.notebook.notebookLogic.Components.InternetSearchRect
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StrokeManager.RecognizedStroke
 import com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.ModelManager
@@ -31,7 +28,8 @@ import kotlin.collections.ArrayList
 
 
 /** Manages the recognition logic and the content that has been added to the current page.  */
-class StrokeManager() {
+@Suppress("DEPRECATION")
+class StrokeManager {
     /** Interface to register to be notified of changes in the recognized content.  */
     interface ContentChangedListener {
         /** This method is called when the recognized content changes.  */
@@ -52,7 +50,6 @@ class StrokeManager() {
     /** Helper class that stores an Stroke along with the corresponding recognized char.  */
     class RecognizedStroke internal constructor(val stroke: Stroke, val ch: Char)
 
-
     // For handling recognition and model downloading.
     private var recognitionTask: RecognitionTask? = null
 
@@ -60,16 +57,15 @@ class StrokeManager() {
     //Holding <Ink,Text> object
     var inkContent: MutableList<RecognizedInk> = ArrayList()
 
-
     //Hold search rect views
     private val searchRect: MutableList<Rect> = ArrayList()
 
     //Hold internet search Rect
-    val internetSearchRect: MutableList<InternetSearchRect> = ArrayList()
+    private val internetSearchRect: MutableList<InternetSearchRect> = ArrayList()
 
     //Stack for the use of undo & redo
     private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
-
+    //used to show dialogs from the stroke manger\ drawing view
     lateinit var parentContext: Context
 
 
@@ -148,7 +144,7 @@ class StrokeManager() {
             matchingIndexes.clear()
             //Find matching indexes
             searchStrokeContent.forEachIndexed { index, recognizedStroke ->
-                if (i.contains(recognizedStroke.ch!!)) {
+                if (i.contains(recognizedStroke.ch)) {
                     matchingIndexes.add(index)
                 }
             }
@@ -199,7 +195,7 @@ class StrokeManager() {
     }
 
     private fun updateContent() {
-        var contentString = "";
+        var contentString = ""
         for (item in inkContent) {
             contentString += item.text
             contentString += " "
@@ -232,20 +228,17 @@ class StrokeManager() {
         stateChangedSinceLastRequest = false
     }
 
-    val currentInk: Ink
-        get() = inkBuilder.build()
-
     fun handleSearchRectTouch(x: Float, y: Float) {
         internetSearchRect.forEach {
             if (it.contains(x, y)) {
                 Log.i("eyalo", "i've been clicked! $it.text")
-                var dialog: AlertDialog.Builder = AlertDialog.Builder(parentContext)
-                dialog.setMessage("Search the web for : ${it.txt} ?").setPositiveButton("Go!",DialogInterface.OnClickListener{
-                    dialog, which ->
-                    //open web
-                }).setNegativeButton("Cancel",DialogInterface.OnClickListener{
-                    dialog, which ->dialog.dismiss()
-                })
+                val dialog: AlertDialog.Builder = AlertDialog.Builder(parentContext)
+                dialog.setMessage("Search the web for : ${it.txt} ?")
+                    .setPositiveButton("Go!") { _, _ ->
+                        //open web
+                    }.setNegativeButton("Cancel") { dialog1, _ ->
+                        dialog1.dismiss()
+                    }
 
                 dialog.create()
                 dialog.show()
@@ -417,9 +410,8 @@ class StrokeManager() {
 
 
     companion object {
-        @JvmField
         @VisibleForTesting
-        //1000 default
+        const//1000 default
 
         val CONVERSION_TIMEOUT_MS: Long = 1000
 
@@ -452,7 +444,7 @@ private fun MutableList<RecognizedStroke>.add(recognizedInk: RecognizedInk) {
     val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
     var textIndex = 0 //iterate over the non spaces text
     var strokeIndex = 0 //iterate of the strokes array
-    while (textIndex < noSpacesText?.length!! && strokeIndex < recognizedInk.ink.strokes.size) {
+    while (textIndex < noSpacesText.length && strokeIndex < recognizedInk.ink.strokes.size) {
         add(
             RecognizedStroke(
                 recognizedInk.ink.strokes[strokeIndex],
