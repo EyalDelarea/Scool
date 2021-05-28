@@ -68,7 +68,7 @@ class DrawingView @JvmOverloads constructor(
         oldWidth: Int,
         oldHeight: Int
     ) {
-        Log.i("eyalo", "onSizeChanged")
+
         canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         drawCanvas = Canvas(canvasBitmap)
         //THIS IS THE PLACE TO LOAD THE CONTENT
@@ -119,7 +119,8 @@ class DrawingView @JvmOverloads constructor(
         val inputSize = event.size
         val x = event.x
         val y = event.y
-        val isStylus: Boolean = inputSize.toDouble() == stylusSize
+        val isStylus: Boolean = inputSize.toDouble() <= stylusSize
+
         if (!isInternetSearchOn && isStylus) {
             when (action) {
                 MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
@@ -172,7 +173,7 @@ class DrawingView @JvmOverloads constructor(
             drawStroke(s, currentStrokePaint)
         }
         invalidate()
-        Log.i("eyalo", "invalidated")
+
     }
 
     private fun drawStroke(s: Ink.Stroke, paint: Paint) {
@@ -189,11 +190,11 @@ class DrawingView @JvmOverloads constructor(
     }
 
     fun setHandWritingEnabled() {
-        stylusSize = 0.2
+        stylusSize = 0.6
     }
 
     fun setStylusOnlyMode() {
-        stylusSize = 0.0
+        stylusSize = 0.1
     }
 
     //Helper function for showColorPicker

@@ -130,30 +130,30 @@ class NotebookMainActivity : AppCompatActivity() {
     }
 
 
-    fun clearClick() {
+    fun clearClick(view :View?) {
         strokeManager.reset()
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.clear()
     }
 
 
-    fun colorPickerClicked() {
+    fun colorPickerClicked(view :View?) {
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.showColorPicker()
     }
 
 
-    fun recognizeClick() {
+    fun recognizeClick(view :View?) {
         strokeManager.recognize()
     }
 
-    fun undo() {
+    fun undo(view :View?) {
         if (!strokeManager.undo()) {
             Toast.makeText(this, "Stack is empty", Toast.LENGTH_LONG).show()
         }
     }
 
-    fun redo() {
+    fun redo(view :View?) {
         if (!strokeManager.redo()) {
             Toast.makeText(this, "Nothing to restore", Toast.LENGTH_LONG).show()
         }

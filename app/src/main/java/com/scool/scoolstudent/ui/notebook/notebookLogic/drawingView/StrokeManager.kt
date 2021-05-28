@@ -231,10 +231,9 @@ class StrokeManager {
     fun handleSearchRectTouch(x: Float, y: Float) {
         internetSearchRect.forEach {
             if (it.contains(x, y)) {
-                Log.i("eyalo", "i've been clicked! $it.text")
                 val dialog: AlertDialog.Builder = AlertDialog.Builder(parentContext)
                 dialog.setMessage("Search the web for : ${it.txt} ?")
-                    .setPositiveButton("Go!") { _, _ ->
+                    .setPositiveButton("Search") { _, _ ->
                         //open web
                     }.setNegativeButton("Cancel") { dialog1, _ ->
                         dialog1.dismiss()
@@ -278,7 +277,7 @@ class StrokeManager {
                             count,
                             text.toString()
                         )
-                        start = count
+                        start += count
                         count = 0
                         text.clear()
                     } else {
