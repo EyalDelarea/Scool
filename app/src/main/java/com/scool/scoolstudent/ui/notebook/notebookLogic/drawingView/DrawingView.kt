@@ -53,9 +53,9 @@ class DrawingView @JvmOverloads constructor(
     private lateinit var canvasBitmap: Bitmap
     private lateinit var strokeManager: StrokeManager
     private val realmName = "Notebooks"
-    private val config: RealmConfiguration = RealmConfiguration.Builder().name(realmName).build()
-    private var backgroundThreadRealm: Realm = Realm.getInstance(config)
-    private lateinit var notebooks: RealmResults<NotebookRealmObject>
+//    private val config: RealmConfiguration = RealmConfiguration.Builder().name(realmName).build()
+//    private var backgroundThreadRealm: Realm = Realm.getInstance(config)
+//    private lateinit var notebooks: RealmResults<NotebookRealmObject>
 
 
     fun setStrokeManager(strokeManager: StrokeManager) {
@@ -94,6 +94,7 @@ class DrawingView @JvmOverloads constructor(
 
     fun clear() {
         currentStroke.reset()
+
         onSizeChanged(
             canvasBitmap.width,
             canvasBitmap.height,

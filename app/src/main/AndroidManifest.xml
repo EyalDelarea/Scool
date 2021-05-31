@@ -13,7 +13,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.ScoolStudent">
         <activity
-            android:name=".MainActivity"
+            android:name=".NotebookMainActivity"
             android:label="@string/app_name"
             android:theme="@style/Theme.ScoolStudent.NoActionBar">
             <intent-filter>
@@ -22,11 +22,11 @@
             </intent-filter>
 
         </activity>
-        <activity
-            android:name=".NotebookMainActivity"
-            android:theme="@style/Theme.ScoolStudent.NoActionBar">
+        <!--        <activity-->
+        <!--            android:name=".NotebookMainActivity"-->
+        <!--            android:theme="@style/Theme.ScoolStudent.NoActionBar">-->
 
-        </activity>
+        <!--        </activity>-->
     </application>
 
 </manifest>

@@ -65,6 +65,7 @@ class StrokeManager {
 
     //Stack for the use of undo & redo
     private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
+
     //used to show dialogs from the stroke manger\ drawing view
     lateinit var parentContext: Context
 
@@ -208,6 +209,8 @@ class StrokeManager {
         resetCurrentInk()
         inkContent.clear()
         strokeContent.clear()
+        searchRect.clear()
+        internetSearchRect.clear()
         recognitionTask?.cancel()
         status = ""
     }
@@ -331,7 +334,7 @@ class StrokeManager {
                 inkBuilder.addStroke(strokeBuilder.build())
                 strokeBuilder = Stroke.builder()
                 stateChangedSinceLastRequest = true
-                // recognize()
+                recognize()
             }
             else -> // Indicate touch event wasn't handled.
                 return false

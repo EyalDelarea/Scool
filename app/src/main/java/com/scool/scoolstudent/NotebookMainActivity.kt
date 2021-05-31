@@ -31,20 +31,20 @@ class NotebookMainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.drawing_view)
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
-        val statusTextView = findViewById<StatusTextView>(
-            R.id.statusTextView
-        )
+//        val statusTextView = findViewById<StatusTextView>(
+//            R.id.statusTextView
+//        )
         drawingView.setStrokeManager(strokeManager)
         val searchBar = findViewById<SearchView>(R.id.searchView)
         val spinner: Spinner = findViewById(R.id.settingsSpinner)
 
         //Setup database connection
-        val config = RealmConfiguration.Builder().name(realmName).build()
-        backgroundThreadRealm = Realm.getInstance(config)
+//        val config = RealmConfiguration.Builder().name(realmName).build()
+        //   backgroundThreadRealm = Realm.getInstance(config)
 
         //Setup Stroke Manager
-        statusTextView.setStrokeManager(strokeManager)
-        strokeManager.setStatusChangedListener(statusTextView)
+            //  statusTextView.setStrokeManager(strokeManager)
+        //strokeManager.setStatusChangedListener(statusTextView)
         strokeManager.setContentChangedListener(drawingView)
         strokeManager.setActiveModel("he") //default hebrew lang
         strokeManager.download()
@@ -130,30 +130,31 @@ class NotebookMainActivity : AppCompatActivity() {
     }
 
 
-    fun clearClick(view :View?) {
+    fun clearClick(view: View?) {
         strokeManager.reset()
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.clear()
+
     }
 
 
-    fun colorPickerClicked(view :View?) {
+    fun colorPickerClicked(view: View?) {
         val drawingView = findViewById<DrawingView>(R.id.drawingView)
         drawingView.showColorPicker()
     }
 
 
-    fun recognizeClick(view :View?) {
+    fun recognizeClick(view: View?) {
         strokeManager.recognize()
     }
 
-    fun undo(view :View?) {
+    fun undo(view: View?) {
         if (!strokeManager.undo()) {
             Toast.makeText(this, "Stack is empty", Toast.LENGTH_LONG).show()
         }
     }
 
-    fun redo(view :View?) {
+    fun redo(view: View?) {
         if (!strokeManager.redo()) {
             Toast.makeText(this, "Nothing to restore", Toast.LENGTH_LONG).show()
         }

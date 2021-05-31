@@ -6,18 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".NotebookMainActivity">
 
-    <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.utils.StatusTextView
-        android:id="@+id/statusTextView"
-        android:layout_width="0dp"
-        android:layout_height="65dp"
-        android:layout_marginEnd="70dp"
-        android:text="com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.StatusTextView"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-
-        app:layout_constraintStart_toStartOf="parent" />
-
     <com.scool.scoolstudent.ui.notebook.notebookLogic.drawingView.DrawingView
         android:id="@+id/drawingView"
         android:layout_width="0dp"
@@ -27,7 +15,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3"
         app:layout_constraintVertical_bias="0.0" />
 
     <LinearLayout
@@ -36,7 +24,7 @@
         android:layout_height="62dp"
 
         android:layout_marginTop="1dp"
-        android:background="#0A787878"
+        android:background="#FFFFFF"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -47,7 +35,7 @@
             android:layout_width="380dp"
             android:layout_height="match_parent"
             android:background="#0A787878"
-            android:queryHint="Search here inside hand writing" >
+            android:queryHint="Search here inside hand writing">
 
         </SearchView>
 
@@ -64,6 +52,7 @@
                 android:id="@+id/eraseBtn"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:alpha="0"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/redoBtn"
                 app:layout_constraintHorizontal_bias="0.5"
@@ -131,6 +120,7 @@
                 android:id="@+id/recoBtn"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
+                android:alpha="0"
                 android:onClick="recognizeClick"
                 android:padding="1dp"
                 app:layout_constraintBottom_toBottomOf="parent"
@@ -158,5 +148,16 @@
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </LinearLayout>
+
+    <ImageView
+        android:id="@+id/imageView4"
+        android:layout_width="424dp"
+        android:layout_height="193dp"
+        android:layout_marginBottom="80dp"
+        android:alpha="0.5"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:srcCompat="@drawable/scool" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
