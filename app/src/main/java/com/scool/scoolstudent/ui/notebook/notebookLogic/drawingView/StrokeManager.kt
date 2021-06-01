@@ -249,6 +249,10 @@ class StrokeManager {
         }
     }
 
+    fun clearSearchRect(){
+        internetSearchRect.clear()
+    }
+
     fun buildInternetSearchRect(drawingView: DrawingView) {
         val specialChars = arrayOf('ה', 'ת', 'א', 'ק')
         //Create new instance to handle duplicates

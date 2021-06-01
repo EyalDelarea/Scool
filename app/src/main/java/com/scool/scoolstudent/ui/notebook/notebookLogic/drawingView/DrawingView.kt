@@ -190,6 +190,13 @@ class DrawingView @JvmOverloads constructor(
         isInternetSearchOn = !isInternetSearchOn
     }
 
+    fun setInputtoFalse(){
+        isInternetSearchOn=true
+    }
+    fun setInputtoTrue(){
+        isInternetSearchOn=false
+    }
+
     fun setHandWritingEnabled() {
         stylusSize = 0.6
     }
