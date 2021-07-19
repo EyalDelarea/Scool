@@ -139,9 +139,11 @@ class StrokeManager {
         strokeContent.forEach {
             searchStrokeContent.add(it)
         }
+        Log.i("eyalo","size ${searchStrokeContent.size}")
         //For each word separately mark text on screen
         //When index is marked on screen, it is removed from the list
         for (i in list) {
+            Log.i("eyalo","size ${searchStrokeContent.size}")
             matchingIndexes.clear()
             //Find matching indexes
             searchStrokeContent.forEachIndexed { index, recognizedStroke ->

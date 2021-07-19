@@ -91,13 +91,13 @@ class NotebookMainActivity : AppCompatActivity() {
             internetBtn.setBackgroundResource(R.drawable.roundcorner)
             drawingBtn.setBackgroundResource(R.drawable.rounder_selected)
             makeToast("Now you can write on the screen again!")
-            infoText.text =
-                "1.Write on screen only in hebrew \n2.Without joined letters \n3.Search them on the screen!"
+          //  infoText.text =
+         //       "1.Write on screen only in hebrew \n2.Without joined letters \n3.Search them on the screen!"
         } else { //Internet searchMode
             internetBtn.setBackgroundResource(R.drawable.rounder_selected)
             drawingBtn.setBackgroundResource(R.drawable.roundcorner)
             makeToast("Now you can click on words to search them online!")
-            infoText.text = "Touch any word to search it online!"
+      //      infoText.text = "Touch any word to search it online!"
         }
 
     }

@@ -156,9 +156,15 @@ object UtilsFunctions {
         searchStrokeContent: MutableList<StrokeManager.RecognizedStroke>
     ) {
         //TODO Fix if the query doesn't start from 0
-        for ((counter, j) in (startIndex..startIndex + heightStreak).withIndex()) {
-            searchStrokeContent.removeAt(j - counter)
+
+        if (startIndex == heightStreak) {
+            searchStrokeContent.removeAt(startIndex)
+        } else {
+            for ((counter, j) in (startIndex..startIndex + heightStreak).withIndex()) {
+                searchStrokeContent.removeAt(j - counter)
+            }
         }
+
     }
 }
 
