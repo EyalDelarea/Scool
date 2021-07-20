@@ -70,21 +70,6 @@ class DrawingView @JvmOverloads constructor(
         invalidate()
     }
 
-//    /**
-//     * Function to handle the flag of the erase state
-//     * and the paint to save the last paint.
-//     */
-//    fun onEraseClick() {
-//        if (!isEraseOn) {
-//            isEraseOn = true
-//            preTextPaint = currentStrokePaint
-//            currentStrokePaint = erasePaint
-//        } else {
-//            isEraseOn = false
-//            currentStrokePaint = preTextPaint
-//        }
-//    }
-
     fun clear() {
         currentStroke.reset()
 
@@ -209,49 +194,11 @@ class DrawingView @JvmOverloads constructor(
     }
 
 
-//    fun onLoadPage() {
-//        //Query the DB for the name of the notebook
-//        //TODO implement names for notebooks
-//        backgroundThreadRealm.executeTransactionAsync { bgRealm ->
-//            notebooks = bgRealm.where<NotebookRealmObject>().findAll()
-//            Log.i("eyalo", "this is notebooks : $notebooks")
-//            val pair = buildContent(notebooks)
-//            updateContent(pair.first, pair.second)
-//        }
-//
-//    }
-
     private fun updateContent(ink: Ink, text: String) {
         strokeManager.status = text
         strokeManager.inkContent.add(RecognitionTask.RecognizedInk(ink, text))
         drawInk(ink)
     }
-
-    /**
-     * Shows color picker dialog
-     */
-    //TODO move to util \ components
-    fun showColorPicker() {
-        ColorPickerDialogBuilder
-            .with(context)
-            .setTitle("Choose color")
-            .initialColor(currentBackgroundColor)
-            .wheelType(ColorPickerView.WHEEL_TYPE.CIRCLE)
-            .density(15)
-            .setOnColorSelectedListener {
-                currentStrokePaint.color = it
-                recognizedStrokePaint.color = it
-            }
-            .setPositiveButton(
-                "ok"
-            )
-            { _, selectedColor, _ -> changeBackgroundColor(selectedColor) }
-            .setNegativeButton("cancel") { _, _ -> }
-            .showColorPreview(true)
-            .build()
-            .show()
-    }
-
 
     companion object {
         private const val TAG = "MLKD.DrawingView"

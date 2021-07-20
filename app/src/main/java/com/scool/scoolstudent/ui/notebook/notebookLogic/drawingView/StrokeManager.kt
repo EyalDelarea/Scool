@@ -63,9 +63,6 @@ class StrokeManager {
     //Hold internet search Rect
     private val internetSearchRect: MutableList<InternetSearchRect> = ArrayList()
 
-    //Stack for the use of undo & redo
-    private val strokeStack: ArrayDeque<RecognizedStroke> = ArrayDeque()
-
     //used to show dialogs from the stroke manger\ drawing view
     lateinit var parentContext: Context
 
