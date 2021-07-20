@@ -52,10 +52,6 @@ class DrawingView @JvmOverloads constructor(
     private var drawCanvas: Canvas = Canvas()
     private lateinit var canvasBitmap: Bitmap
     private lateinit var strokeManager: StrokeManager
-    private val realmName = "Notebooks"
-//    private val config: RealmConfiguration = RealmConfiguration.Builder().name(realmName).build()
-//    private var backgroundThreadRealm: Realm = Realm.getInstance(config)
-//    private lateinit var notebooks: RealmResults<NotebookRealmObject>
 
 
     fun setStrokeManager(strokeManager: StrokeManager) {
@@ -71,9 +67,6 @@ class DrawingView @JvmOverloads constructor(
 
         canvasBitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         drawCanvas = Canvas(canvasBitmap)
-        //THIS IS THE PLACE TO LOAD THE CONTENT
-        //TODO implement this with intent info
-        //  onLoadPage()
         invalidate()
     }
 
@@ -122,7 +115,8 @@ class DrawingView @JvmOverloads constructor(
         val y = event.y
         val isStylus: Boolean = inputSize.toDouble() <= stylusSize
 
-        if (!isInternetSearchOn && isStylus) {
+        //TODO ADD STYLUS
+        if (!isInternetSearchOn) {
             when (action) {
                 MotionEvent.ACTION_DOWN -> currentStroke.moveTo(x, y) //start
                 MotionEvent.ACTION_MOVE -> currentStroke.lineTo(x, y) //on motion

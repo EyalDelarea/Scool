@@ -132,56 +132,22 @@ class StrokeManager {
         val delim = " "
         val list = query.split(delim)
         matchingIndexes.clear()
-        //Find all matching indexes in strokes
-
         //Create new instance to handle duplicates
         val searchStrokeContent: MutableList<RecognizedStroke> = ArrayList()
         strokeContent.forEach {
             searchStrokeContent.add(it)
         }
-        Log.i("eyalo","size ${searchStrokeContent.size}")
         //For each word separately mark text on screen
         //When index is marked on screen, it is removed from the list
         for (i in list) {
-            Log.i("eyalo","size ${searchStrokeContent.size}")
             matchingIndexes.clear()
-            //Find matching indexes
+            //Find all matching indexes in strokes
             searchStrokeContent.forEachIndexed { index, recognizedStroke ->
                 if (i.contains(recognizedStroke.ch)) {
                     matchingIndexes.add(index)
                 }
             }
             markTextOnScreen(i, drawingView, searchStrokeContent, searchRect, textPaint)
-        }
-    }
-
-    /**
-     * Undo function
-     * NEED TO IMPLEMENT - stack for un recognized strokes
-     */
-    fun undo(): Boolean {
-        return if (strokeContent.isNotEmpty()) {
-            strokeStack.addFirst(strokeContent[strokeContent.size - 1]) // add to stack
-            strokeContent.removeAt(strokeContent.size - 1) //remove last stroke from stack
-            contentChangedListener?.onContentChanged() //notify content change
-            true
-        } else {
-            false
-        }
-    }
-
-    /**
-     * Redo function
-     * NEED TO IMPLEMENT - stack for un recognized strokes
-     */
-    fun redo(): Boolean {
-        return if (strokeStack.isNotEmpty()) {
-            strokeContent.add(strokeStack.first())
-            strokeStack.removeFirst()
-            contentChangedListener?.onContentChanged()
-            true
-        } else {
-            false
         }
     }
 
@@ -243,7 +209,6 @@ class StrokeManager {
                     }.setNegativeButton("Cancel") { dialog1, _ ->
                         dialog1.dismiss()
                     }
-
                 dialog.create()
                 dialog.show()
 
@@ -262,7 +227,6 @@ class StrokeManager {
         inkContent.forEach {
             searchInkContent.add(it)
         }
-
         //iterate over all the text
         val text = StringBuilder()
         //Stroke Count
@@ -362,10 +326,6 @@ class StrokeManager {
         this.contentChangedListener = contentChangedListener
     }
 
-    fun setStatusChangedListener(statusChangedListener: StatusChangedListener?) {
-        this.statusChangedListener = statusChangedListener
-    }
-
     // Model downloading / deleting / setting.
     fun setActiveModel(languageTag: String) {
         status = modelManager.setModel(languageTag)
@@ -444,7 +404,6 @@ class StrokeManager {
  *     Adding each stroke the strokeContent list
  *     While taking care of special case letter which
  *     hold two strokes
- *     TODO implement fix for 1 stroke 2 chars ש+ל and so on
  */
 private fun MutableList<RecognizedStroke>.add(recognizedInk: RecognizedInk) {
     //remove spaces

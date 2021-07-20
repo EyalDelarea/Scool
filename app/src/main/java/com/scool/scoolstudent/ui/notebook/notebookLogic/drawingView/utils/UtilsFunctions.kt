@@ -155,8 +155,6 @@ object UtilsFunctions {
         heightStreak: Int,
         searchStrokeContent: MutableList<StrokeManager.RecognizedStroke>
     ) {
-        //TODO Fix if the query doesn't start from 0
-
         if (startIndex == heightStreak) {
             searchStrokeContent.removeAt(startIndex)
         } else {
@@ -185,9 +183,7 @@ private fun String.replace(oldChar: Char?, newChar: String): Any {
     }
 }
 
-/**
- *
- */
+
 fun buildContent(notebooks: RealmResults<NotebookRealmObject>): Pair<Ink, String> {
     try {
         var strokeBuilder = Ink.Stroke.builder()
