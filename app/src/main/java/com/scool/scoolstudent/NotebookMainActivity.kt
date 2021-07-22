@@ -20,6 +20,7 @@ class NotebookMainActivity : AppCompatActivity() {
     @VisibleForTesting
     val strokeManager = StrokeManager()
     private lateinit var drawingView: DrawingView
+
     @SuppressLint("ClickableViewAccessibility")
     @RequiresApi(Build.VERSION_CODES.N)
     public override fun onCreate(savedInstanceState: Bundle?) {

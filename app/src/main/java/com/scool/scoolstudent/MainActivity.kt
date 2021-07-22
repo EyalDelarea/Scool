@@ -45,14 +45,6 @@ class MainActivity : AppCompatActivity() {
         )
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
-
-
-
-        Realm.init(this)
-
-
-
-
     }
 
 
