@@ -2,6 +2,10 @@
 
 ![WhatsApp%20Image%202021-04-26%20at%2018 04_edited](https://user-images.githubusercontent.com/23456142/118398147-f85e2580-b65f-11eb-91ab-1a74ec6dd595.png)
 
+Scool Wix info website:
+
+https://scoolinfo12345.wixsite.com/my-site-1
+
 Scool App Source Code
 
 UI Design : 
